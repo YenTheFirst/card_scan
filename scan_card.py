@@ -25,7 +25,24 @@ def longest_lines(hull):
 			'len': ( (x2-x1)**2 + (y2-y1)**2 ) ** 0.5,
 			'angle': math.atan2(y2 - y1, x2-x1),
 		}
-
+	#make straight-ish lines actually straight
+	n = 0
+	while n < len(lines):
+		l1 = lines[n]
+		l2 = lines[(n+1) % len(lines)]
+		if abs(l1['angle'] - l2['angle']) / (math.pi*2) < 0.0027:
+			x1, y1 = c1 = l1['c1']
+			x2, y2 = c2 = l2['c2']
+			lines[n] = {
+				'c1': c1,
+				'c2': c2,
+				'len': ( (x2-x1)**2 + (y2-y1)**2 ) ** 0.5,
+				'angle': math.atan2(y2 - y1, x2-x1),
+			}
+			del lines[n+1]
+		else:
+			n += 1
+	
 	lines.sort(key = lambda l: -l['len'])
 	return lines
 
@@ -117,7 +134,7 @@ base = cv.LoadImage("base.png", 0)
 capture = cv.LoadImage("swamp_02.png", 0)
 corners =  scan_card.detect_card(capture, base)
 corners should not be None
-corners should be close to [blah]
+corners should be close to [(253, 44), (503, 44), (530, 400), (244, 402)]
 
 
 test 2
@@ -125,5 +142,5 @@ base = cv.LoadImage("base_03.png", 0)
 capture = cv.LoadImage("swamp_03.png", 0)
 corners =  scan_card.detect_card(capture, base)
 corners should not be none
-corners should be close to [blah]
+corners should be close to [(167, 126), (384, 69), (460, 366), (235, 423)]
 '''
