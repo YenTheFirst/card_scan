@@ -113,6 +113,68 @@ def get_card(color_capture, corners):
 	cv.SetImageROI(warped, (0,0,223,310) )
 	return warped
 
+def draw_keypoints(color_img, keypoints):
+	tmp = cv.CloneImage(color_img)
+	min_size = min(size for (pt, l, size, dir, hessian) in keypoints)
+	max_size = max(size for (pt, l, size, dir, hessian) in keypoints)
+	min_length = 2
+	max_length = 10
+	ratio = (max_length - min_length) / float(max_size - min_size)
+
+	for ((x,y), lap, size, dir, hessian) in keypoints:
+		p1 = (int(x), int(y))
+		if lap==1:
+			color = (255,0,0)
+		elif lap==0:
+			color = (0,255,0)
+		elif lap==-1:
+			color = (0,0,255)
+		else:
+			color = (255, 255, 255) # shouldn't happen
+
+		length = (size - min_size) * ratio + min_length
+
+		cv.Circle(tmp, p1, 1, color)
+		a = math.pi * dir / 180.0
+		p2 = (
+			int(x + math.cos(a) * length),
+			int(y + math.sin(a) * length)
+		)
+		cv.Line(tmp, p1, p2, color)
+	return tmp
+
+
+def float_version(img):
+	tmp = cv.CreateImage( cv.GetSize(img), 32, 1)
+	cv.ConvertScale(img, tmp, 1/255.0)
+	return tmp
+
+def mask_for(img, pt):
+	tmp = cv.CreateImage( cv.GetSize(img), 8, 1)
+	cv.Set(tmp, 255)
+	cv.Rectangle(tmp, (0,0), pt, 0, -1)
+	return tmp
+
+def high_freq(img, pct):
+	f = float_version(img)
+	cv.DFT(f, f, cv.CV_DXT_FORWARD)
+	mask = cv.CreateImage( cv.GetSize(img), 8, 1)
+	cv.Set(mask, 0)
+	#cv.Set(mask, 255)
+	w, h = cv.GetSize(img)
+	dw = int(w*pct*0.5)
+	dh = int(h*pct*0.5)
+	#cv.Rectangle(mask, (0,0), (int(w*pct), int(h*pct)), 255, -1)
+	#cv.Rectangle(mask, (int(w*pct), int(h*pct)), (w,h), 255, -1)
+	cv.Rectangle(mask, (w/2-dw,h/2-dh), (w/2+dw,h/2+dh), 255, -1)
+	cv.Set(f,0,mask)
+	return f
+	cv.DFT(f, f, cv.CV_DXT_INVERSE_SCALE)
+	return f
+
+
+
+
 '''
 import cv
 import scan_card
@@ -143,4 +205,22 @@ capture = cv.LoadImage("swamp_03.png", 0)
 corners =  scan_card.detect_card(capture, base)
 corners should not be none
 corners should be close to [(167, 126), (384, 69), (460, 366), (235, 423)]
+'''
+
+
+'''
+for dirname, dirnames, filenames in os.walk('known'):
+	for filename in filenames:
+	path = os.path.join(dirname, filename)
+	img = cv.LoadImage(path,0)
+	cv.SetImageROI(img, (0,0,223,310))
+	known.append( (path, img) )
+
+def score(card, known):
+	r = cv.CreateMat(1, 1, cv.CV_32FC1)
+    cv.MatchTemplate(card, known, r, cv.CV_TM_CCORR)
+    return r[0,0]
+
+
+r = cv.CreateMat(1, 1, cv.CV_32FC1)
 '''
