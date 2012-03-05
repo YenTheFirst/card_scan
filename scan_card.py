@@ -173,6 +173,69 @@ def high_freq(img, pct):
 	return f
 
 
+def sum_squared(img1, img2):
+	tmp = cv.CreateImage(cv.GetSize(img1), 8,1)
+	cv.Sub(img1,img2,tmp)
+	cv.Pow(tmp,tmp,2.0)
+	return cv.Sum(tmp)[0]
+
+
+def watch_for_card(camera):
+	has_moved = False
+
+	font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0)
+	img = cv.QueryFrame(camera)
+	size = cv.GetSize(img)
+	n_pixels = size[0]*size[1]
+
+	last_frame = grey = cv.CreateImage(size, 8,1)
+	last_frame = cv.CloneImage(grey)
+	base = cv.CloneImage(grey)
+	cv.CvtColor(img, base, cv.CV_RGB2GRAY)
+	cv.ShowImage('card', base)
+	tmp = cv.CloneImage(grey)
+
+	running_average=[0]*10
+
+	while True:
+		img = cv.QueryFrame(camera)
+		cv.CvtColor(img, grey, cv.CV_RGB2GRAY)
+		s = sum_squared(grey, last_frame)
+		#update average
+		running_average.append(s / n_pixels)
+		avg = sum(running_average) / len(running_average)
+
+		#display the cam view
+		cv.PutText(img, "%s" % avg, (1,24), font, (255,255,255))
+		cv.ShowImage('win',img)
+		del running_average[0]
+		last_frame  = cv.CloneImage(grey)
+
+		#if we're stable-ish
+		if avg < 10:
+			#if we're similar to base, update base
+			#else, check for card
+			base_diff = sum_squared(grey, base) / n_pixels
+			#if base_diff < 1:
+			#	base = cv.CloneImage(grey)
+			#	cv.ShowImage('card', base)
+			if has_moved:
+				corners = detect_card(grey, base)
+				if corners is not None:
+					card = get_card(img, corners)
+					cv.ShowImage('card', card)
+					has_moved = False
+			#else:
+			#	tmp = cv.CloneImage(base)
+			#	cv.PutText(tmp, "%s" % base_diff, (1,24), font, (255,255,255))
+			#	cv.ShowImage('card', tmp)
+		else:
+			has_moved = True
+
+
+
+
+
 
 
 '''
