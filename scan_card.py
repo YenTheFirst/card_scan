@@ -65,7 +65,7 @@ def line_intersect(s1, s2):
 	return (int(round(x)),int(round(y)))
 
 
-def detect_card(grey_image, grey_base, thresh=60):
+def detect_card(grey_image, grey_base, thresh=100):
 	diff = cv.CloneImage(grey_image)
 	cv.AbsDiff(grey_image, grey_base, diff)
 	
@@ -73,17 +73,29 @@ def detect_card(grey_image, grey_base, thresh=60):
 	cv.Canny(diff, edges, thresh, thresh)
 
 	contours = cv.FindContours(edges, cv.CreateMemStorage(0))
-	longest, length = find_longest_contour(contours)
+	edge_pts = []
+	c = contours
+	while c is not None:
+		if len(c) > 10:
+			edge_pts += list(c)
+		if len(c) == 0: #'cus opencv is buggy and dumb
+			break
+		c = c.h_next()
+	
+	if len(edge_pts) == 0:
+		return None
+	hull = cv.ConvexHull2(edge_pts, cv.CreateMemStorage(0), cv.CV_CLOCKWISE, 1)
+	lines = longest_lines(hull)
+	perim = sum(l['len'] for l in lines)
+	print perim
 
 	#likely to be a card. . .
-	if length > 1000:
-		#get the convex hull
-		hull = cv.ConvexHull2(longest, cv.CreateMemStorage(0), cv.CV_CLOCKWISE, 1)
+	if abs(perim - 850) < 100:
 		#extrapolate the rectangle from the hull.
-		lines = longest_lines(hull)
-		perim = sum(l['len'] for l in lines)
 		#if our 4 longest lines make up 80% of our perimiter
-		if sum(l['len'] for l in lines[0:4]) / perim > 0.8:
+		l = sum(l['len'] for l in lines[0:4])
+		print "l = ",l
+		if l / perim  >0.8:
 			#we probably have a high-quality rectangle. extrapolate!
 			sides = sorted(lines[0:4], key = lambda x: x['angle'])
 			#sides are in _some_ clockwise order.
