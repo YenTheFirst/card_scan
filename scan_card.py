@@ -298,3 +298,14 @@ def score(card, known):
 
 r = cv.CreateMat(1, 1, cv.CV_32FC1)
 '''
+
+'''
+import cv
+import scan_card
+cv.NamedWindow('win')
+cv.NamedWindow('base')
+cv.NamedWindow('card')
+cv.StartWindowThread()
+cam = cv.CreateCameraCapture(0)
+scan_card.watch_for_card(cam)
+'''
