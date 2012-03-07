@@ -230,9 +230,7 @@ def watch_for_card(camera):
 			#if we're similar to base, update base
 			#else, check for card
 			base_diff = max(sum_squared(base, frame) / n_pixels for frame in recent_frames)
-			print "bd = %s" % base_diff
 			if base_diff < 2:
-				print "update base"
 				base = cv.CloneImage(grey)
 				cv.ShowImage('base', base)
 			elif has_moved:
