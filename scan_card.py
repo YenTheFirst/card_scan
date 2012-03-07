@@ -2,15 +2,18 @@ import math
 import cv
 
 def find_longest_contour(contour_seq):
-    x = contour_seq
-    max_len = 0
-    max = None
-    while x is not None:
-        if cv.ArcLength(x) > max_len:
-            max_len = cv.ArcLength(x)
-            max = x
-        x = x.h_next()
-    return (max, max_len)
+	x = contour_seq
+	max_len = 0
+	max = None
+	try:
+		while x is not None:
+			if cv.ArcLength(x) > max_len:
+				max_len = cv.ArcLength(x)
+				max = x
+			x = x.h_next()
+	except:
+		pass
+	return (max, max_len)
 
 
 def longest_lines(hull):
