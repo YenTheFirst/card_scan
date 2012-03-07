@@ -30,7 +30,7 @@ def longest_lines(hull):
 		}
 	#make straight-ish lines actually straight
 	n = 0
-	while n < len(lines):
+	while n+1 < len(lines):
 		l1 = lines[n]
 		l2 = lines[(n+1) % len(lines)]
 		if abs(l1['angle'] - l2['angle']) / (math.pi*2) < 0.0027:
