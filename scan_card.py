@@ -233,6 +233,7 @@ def watch_for_card(camera):
 			if base_diff < 2:
 				base = cv.CloneImage(grey)
 				cv.ShowImage('base', base)
+				has_moved = False
 			elif has_moved:
 				corners = detect_card(grey, base)
 				if corners is not None:
