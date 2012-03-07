@@ -191,47 +191,46 @@ def watch_for_card(camera):
 	size = cv.GetSize(img)
 	n_pixels = size[0]*size[1]
 
-	last_frame = grey = cv.CreateImage(size, 8,1)
-	last_frame = cv.CloneImage(grey)
+	grey = cv.CreateImage(size, 8,1)
+	recent_frames = [cv.CloneImage(grey)]
 	base = cv.CloneImage(grey)
 	cv.CvtColor(img, base, cv.CV_RGB2GRAY)
 	cv.ShowImage('card', base)
 	tmp = cv.CloneImage(grey)
 
-	running_average=[0]*10
 
 	while True:
 		img = cv.QueryFrame(camera)
 		cv.CvtColor(img, grey, cv.CV_RGB2GRAY)
-		s = sum_squared(grey, last_frame)
-		#update average
-		running_average.append(s / n_pixels)
-		avg = sum(running_average) / len(running_average)
+
+		biggest_diff = max(sum_squared(grey, frame) / n_pixels for frame in recent_frames)
 
 		#display the cam view
-		cv.PutText(img, "%s" % avg, (1,24), font, (255,255,255))
+		cv.PutText(img, "%s" % biggest_diff, (1,24), font, (255,255,255))
 		cv.ShowImage('win',img)
-		del running_average[0]
-		last_frame  = cv.CloneImage(grey)
+		recent_frames.append(cv.CloneImage(grey))
+		if len(recent_frames) > 5:
+			del recent_frames[0]
 
 		#if we're stable-ish
-		if avg < 10:
+		if biggest_diff < 10:
+			#print "stable"
 			#if we're similar to base, update base
 			#else, check for card
-			base_diff = sum_squared(grey, base) / n_pixels
-			#if base_diff < 1:
-			#	base = cv.CloneImage(grey)
-			#	cv.ShowImage('card', base)
-			if has_moved:
+			base_diff = max(sum_squared(base, frame) / n_pixels for frame in recent_frames)
+			print "bd = %s" % base_diff
+			if base_diff < 2:
+				print "update base"
+				base = cv.CloneImage(grey)
+				cv.ShowImage('base', base)
+			elif has_moved:
 				corners = detect_card(grey, base)
 				if corners is not None:
-					card = get_card(img, corners)
-					cv.ShowImage('card', card)
+					#card = get_card(img, corners)
+					#cv.ShowImage('card', card)
+					cv.PolyLine(img, [corners], 1, (255,255,255))
+					cv.ShowImage('card', img)
 					has_moved = False
-			#else:
-			#	tmp = cv.CloneImage(base)
-			#	cv.PutText(tmp, "%s" % base_diff, (1,24), font, (255,255,255))
-			#	cv.ShowImage('card', tmp)
 		else:
 			has_moved = True
 
