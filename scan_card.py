@@ -237,10 +237,8 @@ def watch_for_card(camera):
 			elif has_moved:
 				corners = detect_card(grey, base)
 				if corners is not None:
-					#card = get_card(img, corners)
-					#cv.ShowImage('card', card)
-					cv.PolyLine(img, [corners], 1, (255,255,255))
-					cv.ShowImage('card', img)
+					card = get_card(img, corners)
+					cv.ShowImage('card', card)
 					has_moved = False
 		else:
 			has_moved = True
