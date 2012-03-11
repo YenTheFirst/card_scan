@@ -1,5 +1,6 @@
 import math
 import cv
+import os
 
 def find_longest_contour(contour_seq):
 	x = contour_seq
@@ -275,6 +276,19 @@ def gradient(img):
 	cv.CartToPolar(x_drv,y_drv,mag,ang)
 	return (mag,ang)
 
+def load_sets(base_dir, set_names):
+	cards = []
+	for dir, subdirs, fnames in os.walk(base_dir):
+		if os.path.split(dir)[1] in set_names:
+			for fname in fnames:
+				path = os.path.join(dir, fname)
+				cards.append((
+					fname,
+					cv.LoadImage(path,0)
+				))
+	return cards
+
+	
 
 '''
 import cv
