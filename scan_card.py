@@ -255,6 +255,13 @@ def watch_for_card(camera, count=0):
 
 
 
+def show_scaled(win, img):
+	min, max, pt1, pt2 = cv.MinMaxLoc(img)
+	cols, rows = cv.GetSize(img)
+	tmp = cv.CreateMat(rows, cols,cv.CV_32FC1)
+	cv.Scale(img, tmp, 1.0/(max-min), 1.0*(-min)/(max-min))
+	cv.ShowImage(win,tmp)
+
 def gradient(img):
 	cols, rows = cv.GetSize(img)
 
