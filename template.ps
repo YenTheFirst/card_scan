@@ -1,0 +1,137 @@
+%!PS
+/inch {72 mul} def
+/line {newpath moveto lineto stroke} def
+/solid {[1] 0 setdash} def
+/dash {[16 16] 0 setdash} def
+
+/w {2.5 inch} def
+/h {3.5 inch} def
+/d {0.75 inch} def
+/r {2} def
+/r2 {r 2 div} def
+/thumbwidth {0.75 inch} def
+/tabwidth {6} def
+/cutwidth {d 2 div} def
+
+%don't know if hardcoding this is best
+/pagewidth {8.5 inch} def
+/pageheight {11 inch} def
+
+/box {
+	% the solid lines
+	newpath
+	[] 0 setdash
+	% the bottom lines
+	0 0 moveto
+	d r w r d r w r d add add add add add add add add 0
+	rlineto
+	0 h r add rlineto
+	% along the top
+	d r w r add add add neg 0
+	rlineto
+	%first tab
+	/tab {
+		tabwidth neg d r add
+		rlineto
+		d tabwidth 2 mul sub neg 0
+		rlineto
+		tabwidth neg r d add neg
+		rlineto
+	} def
+	tab
+	%bottom tab
+	%up
+	r neg 0 rlineto
+	0 d r add rlineto
+	%inner cut
+	cutwidth neg 0 rlineto
+	cutwidth 0 rmoveto
+	%tab portion
+	tabwidth neg d r add rlineto
+	w tabwidth 2 mul sub neg 0 rlineto
+	tabwidth neg r d add neg rlineto
+	%inner cut
+	cutwidth 0 rlineto
+	cutwidth neg 0 rmoveto
+	%down
+	0 r d add neg rlineto
+	r neg 0 rlineto
+	%second tab
+	tab
+	%back down.
+	0 r h add neg rlineto
+
+	%the thumb holes
+	/thumb {
+		currentpoint
+		thumbwidth 2 div
+		0 180 
+		arc
+	} def
+	d r w 2 div add add 0 moveto
+	thumb
+	d r w r d r w 2 div add add add add add add 0 moveto
+	thumb
+
+
+
+	stroke
+	
+	%the dashed fold lines
+	newpath
+	[5 5] 0 setdash
+	0 0 moveto
+
+	d r2 add 0 rmoveto
+	0 h r add rlineto
+	w r add 0 rmoveto
+	0 h r add neg rlineto
+	r2 d r w r2 add add add add 0 rmoveto
+	0 h r add rlineto
+
+	0 h r add moveto
+	d r w r d r2 add add add add add 0 rlineto
+	0 h r add neg rlineto
+
+	%last one at top
+	d r cutwidth add add h r d r add add add moveto
+	w cutwidth 2 mul sub 0 rlineto
+	stroke
+
+} def
+
+
+/margin {
+	pagewidth
+	d 3 mul w 2 mul r 4 mul add add
+	sub 2 div
+} def
+
+margin =
+w r d r w add add add add =
+w r add =
+h r r add add =
+margin d r add add =
+
+pagewidth margin sub d sub r sub w sub r sub d sub r sub w sub =
+pageheight margin sub r sub h sub =
+
+
+margin margin translate
+box
+margin neg margin neg translate
+
+pagewidth pageheight translate
+180 rotate
+margin margin translate
+box
+
+
+
+
+
+
+
+
+
+showpage
