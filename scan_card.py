@@ -255,6 +255,19 @@ def watch_for_card(camera, count=0):
 
 
 
+def gradient(img):
+	cols, rows = cv.GetSize(img)
+
+	x_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
+	y_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
+	mag = cv.CreateMat(rows,cols,cv.CV_32FC1)
+	ang = cv.CreateMat(rows,cols,cv.CV_32FC1)
+	
+	cv.Sobel(img, x_drv, 1, 0)
+	cv.Sobel(img, y_drv, 0, 1)
+	cv.CartToPolar(x_drv,y_drv,mag,ang)
+	return (mag,ang)
+
 
 '''
 import cv
