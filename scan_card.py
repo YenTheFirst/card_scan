@@ -350,3 +350,17 @@ cv.StartWindowThread()
 cam = cv.CreateCameraCapture(0)
 scan_card.watch_for_card(cam)
 '''
+
+
+'''
+cards = scan_card.load_sets(base_dir, ['ISD', 'DKA'])
+c2 = [(name, scan_card.gradient(the_card)[1]) for name, the_card in cards]
+
+for i in xrange(9):
+    card = cv.LoadImage('captures/card_%04d.png' % i,0)
+    cv.ShowImage('card',card); g = scan_card.gradient(card)[1]
+    f = sorted([(score(g, the_card_g, cv.CV_TM_CCOEFF), name) for name,the_card_g in c2], reverse=True)[0:5]
+    print f
+    raw_input()
+'''
+
