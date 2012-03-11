@@ -195,7 +195,7 @@ def sum_squared(img1, img2):
 	return cv.Sum(tmp)[0]
 
 
-def watch_for_card(camera):
+def watch_for_card(camera, count=0):
 	has_moved = False
 
 	font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0)
@@ -237,8 +237,15 @@ def watch_for_card(camera):
 			elif has_moved:
 				corners = detect_card(grey, base)
 				if corners is not None:
-					card = get_card(img, corners)
+					card = get_card(grey, corners)
+					cv.Flip(card,card,-1)
 					cv.ShowImage('card', card)
+					#return card, corners, img, grey
+					cv.SaveImage('captures/card_%04d.png' % count, card)
+					count += 1
+
+
+
 					has_moved = False
 		else:
 			has_moved = True
