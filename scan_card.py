@@ -196,7 +196,7 @@ def sum_squared(img1, img2):
 	return cv.Sum(tmp)[0]
 
 
-def watch_for_card(camera, count=0):
+def watch_for_card(camera, count=0,captures_dir="captures"):
 	has_moved = False
 
 	font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0)
@@ -225,6 +225,20 @@ def watch_for_card(camera, count=0):
 		if len(recent_frames) > 5:
 			del recent_frames[0]
 
+		#check for keystroke
+		c = cv.WaitKey(10)
+		#if there was a keystroke, reset the last capture
+		if c == 100 and count > 0:
+			print "c = ",c
+			count -= 1
+			os.remove(os.path.join(captures_dir,'card_%04d.png' % count))
+			cv.ShowImage('card',grey)
+
+
+
+
+		
+
 		#if we're stable-ish
 		if biggest_diff < 10:
 			#print "stable"
@@ -240,13 +254,12 @@ def watch_for_card(camera, count=0):
 				if corners is not None:
 					card = get_card(grey, corners)
 					cv.Flip(card,card,-1)
-					cv.ShowImage('card', card)
 					#return card, corners, img, grey
-					cv.SaveImage('captures/card_%04d.png' % count, card)
+					cv.SaveImage(os.path.join(captures_dir,'card_%04d.png' % count), card)
 					count += 1
-
-
-
+					print "saved!"
+					cv.PutText(card, "%s" % count, (1,24), font, (255,255,255))
+					cv.ShowImage('card', card)
 					has_moved = False
 		else:
 			has_moved = True
