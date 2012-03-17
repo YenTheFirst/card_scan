@@ -46,7 +46,7 @@ def longest_lines(hull):
 			del lines[n+1]
 		else:
 			n += 1
-	
+
 	lines.sort(key = lambda l: -l['len'])
 	return lines
 
@@ -69,7 +69,7 @@ def line_intersect(s1, s2):
 def detect_card(grey_image, grey_base, thresh=100):
 	diff = cv.CloneImage(grey_image)
 	cv.AbsDiff(grey_image, grey_base, diff)
-	
+
 	edges = cv.CloneImage(grey_image)
 	cv.Canny(diff, edges, thresh, thresh)
 
@@ -82,7 +82,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 		if len(c) == 0: #'cus opencv is buggy and dumb
 			break
 		c = c.h_next()
-	
+
 	if len(edge_pts) == 0:
 		return None
 	hull = cv.ConvexHull2(edge_pts, cv.CreateMemStorage(0), cv.CV_CLOCKWISE, 1)
@@ -91,7 +91,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 	print perim
 
 	#likely to be a card. . .
-	if abs(perim - 850) < 100:
+	if abs(perim - 850) < 160:
 		#extrapolate the rectangle from the hull.
 		#if our 4 longest lines make up 80% of our perimiter
 		l = sum(l['len'] for l in lines[0:4])
@@ -117,7 +117,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 				return None
 			#return rotated list
 			return corners[top_left:] + corners[:top_left]
-	
+
 	return None
 
 def get_card(color_capture, corners):
@@ -237,7 +237,6 @@ def watch_for_card(camera, count=0,captures_dir="captures"):
 
 
 
-		
 
 		#if we're stable-ish
 		if biggest_diff < 10:
@@ -287,7 +286,7 @@ def gradient(img):
 	y_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
 	mag = cv.CreateMat(rows,cols,cv.CV_32FC1)
 	ang = cv.CreateMat(rows,cols,cv.CV_32FC1)
-	
+
 	cv.Sobel(img, x_drv, 1, 0)
 	cv.Sobel(img, y_drv, 0, 1)
 	cv.CartToPolar(x_drv,y_drv,mag,ang)
