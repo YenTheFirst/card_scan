@@ -265,7 +265,11 @@ def watch_for_card(camera, count=0,captures_dir="captures"):
 			has_moved = True
 
 
-
+def setup_windows():
+	cv.NamedWindow('card')
+	cv.NamedWindow('base')
+	cv.NamedWindow('win')
+	#cv.StartWindowThread()
 
 
 
@@ -301,7 +305,14 @@ def load_sets(base_dir, set_names):
 				))
 	return cards
 
-	
+
+def img_from_buffer(buffer):
+	np_arr = numpy.fromstring(f,'uint8')
+	np_mat = cv2.imdecode(np_arr,0)
+	return cv.fromarray(img_read)
+
+#cv.EncodeImage('.PNG',img).tostring()
+
 
 '''
 import cv
