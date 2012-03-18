@@ -1,6 +1,7 @@
 import math
 import cv
 import os
+import sqlite3
 
 def find_longest_contour(contour_seq):
 	x = contour_seq
@@ -306,14 +307,18 @@ def gradient(img):
 	cv.CartToPolar(x_drv,y_drv,mag,ang)
 	return (mag,ang)
 
+#**************************
+#some utilities to manage card loading/saving
 def load_sets(base_dir, set_names):
 	cards = []
 	for dir, subdirs, fnames in os.walk(base_dir):
-		if os.path.split(dir)[1] in set_names:
+		set = os.path.split(dir)[1]
+		if set in set_names:
 			for fname in fnames:
 				path = os.path.join(dir, fname)
 				cards.append((
-					fname,
+					fname.replace('.full.jpg',''),
+					set,
 					cv.LoadImage(path,0)
 				))
 	return cards
@@ -325,7 +330,42 @@ def img_from_buffer(buffer):
 	return cv.fromarray(img_read)
 
 #cv.EncodeImage('.PNG',img).tostring()
+def save_captures(num, captures):
+	dir = "capture_%02d" % num
+	if not os.path.exists(dir):
+		os.mkdir(dir)
+	for i, img in enumerate(captures):
+		path = os.path.join(dir, "card_%04d.png" % i)
+		if os.path.exists(path):
+			raise Exception("path %s already exists!" % path)
+		cv.SaveImage(path, img)
 
+def folder_to_db(num):
+	connection = sqlite3.connect("inventory.sqlite3")
+	try:
+		cursor = connection.cursor()
+
+		dir = "capture_%02d" % num
+		names = sorted(os.listdir(dir))
+		for i, name in enumerate(names):
+			path = os.path.join(dir, name)
+			img = open(path).read()
+
+			cursor.execute('insert into inv_cards (scan_png, box, box_index) values (?, ?, ?)', [sqlite3.Binary(img), num, i])
+		connection.commit()
+	finally:
+		connection.close()
+
+
+LIKELY_SETS = [
+	'DKA', 'ISD',
+	'NPH', 'MBS', 'SOM',
+	'ROE', 'WWK', 'ZEN',
+	'ARB', 'CON', 'ALA',
+	'EVE', 'SHM', 'MOR', 'LRW',
+	'M12', 'M11', 'M10', '10E',
+]
+	
 
 '''
 import cv
