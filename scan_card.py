@@ -348,6 +348,33 @@ def folder_to_db(num):
 	finally:
 		connection.close()
 
+def match_db_cards(known):
+	connection = sqlite3.connect("inventory.sqlite3")
+	try:
+		cursor = connection.cursor()
+		cursor.execute("select rowid, scan_png from inv_cards where name is null or set_name is null")
+		row = cursor.fetchone()
+		while row is not None:
+			try:
+				id, buf = row
+				img = img_from_buffer(buf)
+				card, set = match_card(img, known)
+				card = unicode(card.decode('UTF-8'))
+				cv.ShowImage('debug', img)
+				print "set row %s to %s/%s" % (id, set, card)
+				update_c = connection.cursor()
+				update_c.execute('update inv_cards set name=?, set_name=? where rowid=?', [card, set, id])
+				connection.commit()
+			except KeyboardInterrupt as e:
+				raise e
+			except Exception as e:
+				print "failure on row %s" % row[0]
+				print e
+			finally:
+				row = cursor.fetchone()
+	finally:
+		connection.close()
+
 #*********************
 #card matching section
 def gradient(img):
