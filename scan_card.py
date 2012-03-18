@@ -3,6 +3,8 @@ import cv
 import os
 import sqlite3
 
+#**************************
+#this is the 'detect card' bit
 def find_longest_contour(contour_seq):
 	x = contour_seq
 	max_len = 0
