@@ -294,18 +294,6 @@ def show_scaled(win, img):
 	cv.Scale(img, tmp, 1.0/(max-min), 1.0*(-min)/(max-min))
 	cv.ShowImage(win,tmp)
 
-def gradient(img):
-	cols, rows = cv.GetSize(img)
-
-	x_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
-	y_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
-	mag = cv.CreateMat(rows,cols,cv.CV_32FC1)
-	ang = cv.CreateMat(rows,cols,cv.CV_32FC1)
-
-	cv.Sobel(img, x_drv, 1, 0)
-	cv.Sobel(img, y_drv, 0, 1)
-	cv.CartToPolar(x_drv,y_drv,mag,ang)
-	return (mag,ang)
 
 #**************************
 #some utilities to manage card loading/saving
@@ -356,6 +344,40 @@ def folder_to_db(num):
 	finally:
 		connection.close()
 
+#*********************
+#card matching section
+def gradient(img):
+	cols, rows = cv.GetSize(img)
+
+	x_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
+	y_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
+	mag = cv.CreateMat(rows,cols,cv.CV_32FC1)
+	ang = cv.CreateMat(rows,cols,cv.CV_32FC1)
+
+	cv.Sobel(img, x_drv, 1, 0)
+	cv.Sobel(img, y_drv, 0, 1)
+	cv.CartToPolar(x_drv,y_drv,mag,ang)
+	return (mag,ang)
+
+def angle_hist(mat):
+	h = cv.CreateHist([9], cv.CV_HIST_ARRAY, [(0.001,math.pi*2)], True)
+	cv.CalcHist([cv.GetImage(mat)], h)
+	#cv.NormalizeHist(h,1.0)
+	return h
+
+def score(card, known, method):
+	r = cv.CreateMat(1, 1, cv.CV_32FC1)
+	cv.MatchTemplate(card, known, r, method)
+	return r[0,0]
+
+def match_card(card, known_set):
+	mag, grad = gradient(card)
+	h = angle_hist(grad)
+	limited_set = sorted([(cv.CompareHist(h, hist, cv.CV_COMP_CORREL), name, set, g) for name,set,g,hist in known_set], reverse=True)[0:1000]
+	h_score, name, set, img = max(limited_set,
+		key = lambda (h_score, name, set, known): score(grad, known, cv.CV_TM_CCOEFF)
+	)
+	return (name, set)
 
 LIKELY_SETS = [
 	'DKA', 'ISD',
@@ -408,10 +430,6 @@ for dirname, dirnames, filenames in os.walk('known'):
 	cv.SetImageROI(img, (0,0,223,310))
 	known.append( (path, img) )
 
-def score(card, known):
-	r = cv.CreateMat(1, 1, cv.CV_32FC1)
-    cv.MatchTemplate(card, known, r, cv.CV_TM_CCORR)
-    return r[0,0]
 
 
 r = cv.CreateMat(1, 1, cv.CV_32FC1)
