@@ -195,9 +195,32 @@ def sum_squared(img1, img2):
 	cv.Pow(tmp,tmp,2.0)
 	return cv.Sum(tmp)[0]
 
+#*****************
+#this is the watch-for-card bit
+captures = []
 
-def watch_for_card(camera, count=0,captures_dir="captures"):
+def card_window_clicked(event, x, y, flags, param):
+	if event == 6:
+	#delete capture array indexed at param, update windows
+		global captures
+		del captures[param]
+		update_windows()
+
+def update_windows(n=3):
+	print "update windows!"
+	l = len(captures)
+	for i in xrange(1,min(n,l)+1):
+		print "setting ",i
+		tmp = cv.CloneImage(captures[-i])
+		cv.PutText(tmp, "%s" % (l-i+1), (1,24), font, (255,255,255))
+		cv.ShowImage("card_%d" % i, tmp)
+		cv.SetMouseCallback("card_%d" % i, card_window_clicked, l - i)
+
+def watch_for_card(camera):
 	has_moved = False
+	global captures
+	global font
+	captures = []
 
 	font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0)
 	img = cv.QueryFrame(camera)
@@ -208,7 +231,7 @@ def watch_for_card(camera, count=0,captures_dir="captures"):
 	recent_frames = [cv.CloneImage(grey)]
 	base = cv.CloneImage(grey)
 	cv.CvtColor(img, base, cv.CV_RGB2GRAY)
-	cv.ShowImage('card', base)
+	#cv.ShowImage('card', base)
 	tmp = cv.CloneImage(grey)
 
 
@@ -228,15 +251,8 @@ def watch_for_card(camera, count=0,captures_dir="captures"):
 		#check for keystroke
 		c = cv.WaitKey(10)
 		#if there was a keystroke, reset the last capture
-		if c == 100 and count > 0:
-			print "c = ",c
-			count -= 1
-			os.remove(os.path.join(captures_dir,'card_%04d.png' % count))
-			cv.ShowImage('card',grey)
-
-
-
-
+		if c == 27:
+			return captures
 
 		#if we're stable-ish
 		if biggest_diff < 10:
@@ -246,27 +262,25 @@ def watch_for_card(camera, count=0,captures_dir="captures"):
 			base_diff = max(sum_squared(base, frame) / n_pixels for frame in recent_frames)
 			if base_diff < 2:
 				base = cv.CloneImage(grey)
-				cv.ShowImage('base', base)
 				has_moved = False
 			elif has_moved:
 				corners = detect_card(grey, base)
 				if corners is not None:
 					card = get_card(grey, corners)
 					cv.Flip(card,card,-1)
-					#return card, corners, img, grey
-					cv.SaveImage(os.path.join(captures_dir,'card_%04d.png' % count), card)
-					count += 1
-					print "saved!"
-					cv.PutText(card, "%s" % count, (1,24), font, (255,255,255))
-					cv.ShowImage('card', card)
+					captures.append(card)
+					update_windows()
+					#cv.ShowImage('card', card)
 					has_moved = False
 		else:
 			has_moved = True
 
 
 def setup_windows():
-	cv.NamedWindow('card')
-	cv.NamedWindow('base')
+	cv.NamedWindow('card_1')
+	cv.NamedWindow('card_2')
+	cv.NamedWindow('card_3')
+	#cv.NamedWindow('base')
 	cv.NamedWindow('win')
 	#cv.StartWindowThread()
 
