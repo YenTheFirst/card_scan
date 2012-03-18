@@ -2,6 +2,8 @@ import math
 import cv
 import os
 import sqlite3
+import numpy
+import cv2
 
 #**************************
 #this is the 'detect card' bit
@@ -315,9 +317,9 @@ def load_sets(base_dir, set_names):
 
 
 def img_from_buffer(buffer):
-	np_arr = numpy.fromstring(f,'uint8')
+	np_arr = numpy.fromstring(buffer,'uint8')
 	np_mat = cv2.imdecode(np_arr,0)
-	return cv.fromarray(img_read)
+	return cv.fromarray(np_mat)
 
 #cv.EncodeImage('.PNG',img).tostring()
 def save_captures(num, captures):
