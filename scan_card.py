@@ -200,6 +200,25 @@ def sum_squared(img1, img2):
 	cv.Pow(tmp,tmp,2.0)
 	return cv.Sum(tmp)[0]
 
+def ccoeff_normed(img1, img2):
+	size = cv.GetSize(img1)
+	tmp1 = float_version(img1)
+	tmp2 = float_version(img2)
+
+	cv.SubS(tmp1, cv.Avg(tmp1), tmp1)
+	cv.SubS(tmp2, cv.Avg(tmp2), tmp2)
+
+	norm1 = cv.CloneImage(tmp1)
+	norm2 = cv.CloneImage(tmp2)
+	cv.Pow(tmp1, norm1, 2.0)
+	cv.Pow(tmp2, norm2, 2.0)
+
+	#cv.Mul(tmp1, tmp2, tmp1)
+
+	return cv.DotProduct(tmp1, tmp2) /  (cv.Sum(norm1)[0]*cv.Sum(norm2)[0])**0.5
+
+
+
 #*****************
 #this is the watch-for-card bit
 captures = []
@@ -223,6 +242,8 @@ def update_windows(n=3):
 
 def watch_for_card(camera):
 	has_moved = False
+	been_to_base = False
+
 	global captures
 	global font
 	captures = []
@@ -258,17 +279,37 @@ def watch_for_card(camera):
 		#if there was a keystroke, reset the last capture
 		if c == 27:
 			return captures
+		elif c == 32:
+			has_moved = True
+			been_to_base = True
+		elif c == 114:
+			base = cv.CloneImage(grey)
+
 
 		#if we're stable-ish
 		if biggest_diff < 10:
-			#print "stable"
 			#if we're similar to base, update base
 			#else, check for card
-			base_diff = max(sum_squared(base, frame) / n_pixels for frame in recent_frames)
-			if base_diff < 2:
+			#base_diff = max(sum_squared(base, frame) / n_pixels for frame in recent_frames)
+			base_corr = min(ccoeff_normed(base, frame) for frame in recent_frames)
+			#cv.ShowImage('debug', base)
+
+			"""for i, frame in enumerate(recent_frames):
+				tmp = cv.CloneImage(base)
+				cv.Sub(base, frame, tmp)
+				cv.Pow(tmp, tmp, 2.0)
+				cv.PutText(tmp, "%s" % (i+1), (1,24), font, (255, 255, 255))
+				#my_diff = sum_squared(base, frame) / n_pixels
+				my_diff = ccoeff_normed(base, frame) #score(base, frame, cv.CV_TM_CCOEFF_NORMED)
+				cv.PutText(tmp, "%s" % my_diff, (40, 24), font, (255, 255, 255))
+				cv.ShowImage('dbg%s' % (i+1), tmp)"""
+			print "stable. corr = %s. moved = %s. been_to_base = %s" % (base_corr, has_moved, been_to_base)
+			if base_corr > 0.75:
 				base = cv.CloneImage(grey)
+			#	cv.ShowImage('debug', base)
 				has_moved = False
-			elif has_moved:
+				been_to_base = True
+			elif has_moved and been_to_base:
 				corners = detect_card(grey, base)
 				if corners is not None:
 					card = get_card(grey, corners)
@@ -277,6 +318,7 @@ def watch_for_card(camera):
 					update_windows()
 					#cv.ShowImage('card', card)
 					has_moved = False
+					been_to_base = False
 		else:
 			has_moved = True
 
