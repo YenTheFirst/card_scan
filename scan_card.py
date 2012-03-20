@@ -350,10 +350,16 @@ def load_sets(base_dir, set_names):
 		if set in set_names:
 			for fname in fnames:
 				path = os.path.join(dir, fname)
+
+				img = cv.LoadImage(path,0)
+				angle_map = gradient(img)[1]
+				hist = angle_hist(angle_map)
+
 				cards.append((
 					fname.replace('.full.jpg',''),
 					set,
-					cv.LoadImage(path,0)
+					angle_map,
+					hist
 				))
 	return cards
 
@@ -446,9 +452,12 @@ def score(card, known, method):
 def match_card(card, known_set):
 	mag, grad = gradient(card)
 	h = angle_hist(grad)
-	limited_set = sorted([(cv.CompareHist(h, hist, cv.CV_COMP_CORREL), name, set, g) for name,set,g,hist in known_set], reverse=True)[0:1000]
-	h_score, name, set, img = max(limited_set,
-		key = lambda (h_score, name, set, known): score(grad, known, cv.CV_TM_CCOEFF)
+	#limited_set = sorted([(cv.CompareHist(h, hist, cv.CV_COMP_CORREL), name, set, g) for name,set,g,hist in known_set], reverse=True)[0:1000]
+	#h_score, name, set, img = max(limited_set,
+	#	key = lambda (h_score, name, set, known): score(grad, known, cv.CV_TM_CCOEFF)
+	#)
+	name, set, g, h = max(known_set,
+		key = lambda (n, s, g, h): ccoeff_normed(g,grad)
 	)
 	return (name, set)
 
