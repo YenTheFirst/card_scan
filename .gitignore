@@ -1,0 +1,3 @@
+capture_*/
+*pyc
+*.sqlite3
