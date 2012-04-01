@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+	<head>
+		<style type='text/css'>
+			td { vertical-align: bottom; }
+		</style>
+		<script type='text/javascript'>
+			function update_row(row) {
+				set_name = row.getElementsByClassName('set_name')[0].value;
+				name = row.getElementsByClassName('name')[0].value;
+				new_url = "/known_image/"+encodeURIComponent(set_name)+"/"+encodeURIComponent(name);
+				row.getElementsByClassName('known_card')[0].src = new_url;
+			}
+			function update_textbox(e){
+				row = e.parentElement.parentElement;
+				update_row(row)
+			}
+		</script>
+
+	</head>
+	<body>
+		<form action='verify_scans' method='post' name='cards'>
+			<table>
+				<tr>
+					<th>Matched Card</th>
+					<th>Scanned Image</th>
+					<th>Set</th>
+					<th>Name</th>
+					<th>Box</th>
+					<th>Box Index</th>
+				</tr>
+				{% for card in cards %}
+				<tr>
+					<td><img class='known_card' src="/known_image/{{card['set_name']}}/{{card['name']}}"></td>
+					<td><img src="/db_image/{{card['rowid']}}"></td>
+					<td><input name='{{card['rowid']}}_set_name' onkeyup='update_textbox(this)' class='set_name' type='text' value='{{card['set_name']}}' size=3/></td>
+					<td><input name='{{card['rowid']}}_name' onkeyup='update_textbox(this)' class='name' type='text' value='{{card['name']}}' size=26/></td>
+					<td>{{card['box']}}</td>
+					<td>{{card['box_index']}}</td>
+				</tr>
+				{% endfor %}
+			</table>
+
+			<input type="submit" text='Save All' />
+		</form>
+	</body>
+</html>
+			
+				
