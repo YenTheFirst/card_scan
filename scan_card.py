@@ -96,7 +96,8 @@ def detect_card(grey_image, grey_base, thresh=100):
 	print perim
 
 	#likely to be a card. . .
-	if abs(perim - 850) < 160:
+	#if abs(perim - 1200) < 160:
+	if perim > 700:
 		#extrapolate the rectangle from the hull.
 		#if our 4 longest lines make up 80% of our perimiter
 		l = sum(l['len'] for l in lines[0:4])
@@ -303,7 +304,7 @@ def watch_for_card(camera):
 				my_diff = ccoeff_normed(base, frame) #score(base, frame, cv.CV_TM_CCOEFF_NORMED)
 				cv.PutText(tmp, "%s" % my_diff, (40, 24), font, (255, 255, 255))
 				cv.ShowImage('dbg%s' % (i+1), tmp)"""
-			print "stable. corr = %s. moved = %s. been_to_base = %s" % (base_corr, has_moved, been_to_base)
+			#print "stable. corr = %s. moved = %s. been_to_base = %s" % (base_corr, has_moved, been_to_base)
 			if base_corr > 0.75:
 				base = cv.CloneImage(grey)
 			#	cv.ShowImage('debug', base)
