@@ -352,6 +352,10 @@ def load_sets(base_dir, set_names):
 				path = os.path.join(dir, fname)
 
 				img = cv.LoadImage(path,0)
+				if cv.GetSize(img) != (223, 310):
+					tmp = cv.CreateImage((223, 310), 8, 1)
+					cv.Resize(img,tmp)
+					img = tmp
 				angle_map = gradient(img)[1]
 				hist = angle_hist(angle_map)
 
@@ -468,6 +472,7 @@ LIKELY_SETS = [
 	'ARB', 'CON', 'ALA',
 	'EVE', 'SHM', 'MOR', 'LRW',
 	'M12', 'M11', 'M10', '10E',
+	'HOP',
 ]
 	
 
