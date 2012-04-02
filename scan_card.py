@@ -169,15 +169,6 @@ def detect_card(grey_image, grey_base, thresh=100):
 			if not all(corners):
 				return None
 
-			if debug_status == "corners":
-				tmp = cv.CloneImage(grey_image)
-				for c in corners:
-					cv.Circle(tmp, c, 4, 255)
-				cv.PolyLine(tmp, [corners], True, 255, 2)
-				cv.PutText(tmp, "area to extract", (1,24), font, 0)
-				cv.ShowImage('debug', tmp)
-				return None
-
 			#rotate corners so top-left corner is first. 
 			#that way we're clockwise from top-left
 			sorted_x = sorted(c[0] for c in corners)
@@ -189,6 +180,19 @@ def detect_card(grey_image, grey_base, thresh=100):
 			if top_left is None:
 				return None
 			#return rotated list
+			if debug_status == "corners" or debug_status is "auto":
+				tmp = cv.CloneImage(grey_image)
+				for c in corners:
+					cv.Circle(tmp, c, 4, 255)
+				cv.PolyLine(tmp, [corners], True, 255, 2)
+				if debug_status == "corners":
+					cv.PutText(tmp, "area to extract", (1,24), font, 0)
+				else:
+					cv.PutText(tmp, "auto", (1,24), font, 0)
+				cv.ShowImage('debug', tmp)
+				if debug_status == "corners":
+					return None
+
 			return corners[top_left:] + corners[:top_left]
 
 	return None
@@ -339,7 +343,6 @@ def watch_for_card(camera):
 		biggest_diff = max(sum_squared(grey, frame) / n_pixels for frame in recent_frames)
 
 		#display the cam view
-		cv.PutText(img, "%s" % biggest_diff, (1,24), font, (255,255,255))
 		cv.ShowImage('win',img)
 		recent_frames.append(cv.CloneImage(grey))
 		if len(recent_frames) > 5:
@@ -359,10 +362,12 @@ def watch_for_card(camera):
 			num = c-48
 			debug_status = [None, "base", "grey", "diff", "edges", "contours", "edge_points", "hull", "longest_lines", "corners"][num]
 			print "debug_status: ",debug_status
+		elif c == 97:
+			debug_status = "auto"
 
 
 		#if we're stable-ish
-		if debug_status is not None:
+		if debug_status is not None and debug_status != "auto":
 			detect_card(grey, base)
 		elif biggest_diff < 10:
 			#if we're similar to base, update base
