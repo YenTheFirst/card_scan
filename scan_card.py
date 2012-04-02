@@ -5,6 +5,8 @@ import sqlite3
 import numpy
 import cv2
 
+debug_status = None
+
 #**************************
 #this is the 'detect card' bit
 def find_longest_contour(contour_seq):
@@ -72,17 +74,41 @@ def line_intersect(s1, s2):
 
 
 def detect_card(grey_image, grey_base, thresh=100):
+	if debug_status == "grey":
+		cv.ShowImage('debug', grey_image)
+		return None
+
+	if debug_status == "base":
+		cv.ShowImage('debug', grey_base)
+		return None
+
 	diff = cv.CloneImage(grey_image)
 	cv.AbsDiff(grey_image, grey_base, diff)
+	if debug_status == "diff":
+		cv.ShowImage('debug', diff)
+		return None
 
 	edges = cv.CloneImage(grey_image)
 	cv.Canny(diff, edges, thresh, thresh)
+	if debug_status == "edges":
+		cv.ShowImage('debug', edges)
+		return None
 
 	contours = cv.FindContours(edges, cv.CreateMemStorage(0))
 	edge_pts = []
+	if debug_status == "contours":
+		tmp = cv.CloneImage(grey_image)
+		c = contours 
+		while c is not None:
+			if len(c) > 20:
+				cv.DrawContours(tmp, c, 255, 255, 0)
+			c = c.h_next()
+		cv.ShowImage('debug', tmp)
+		return None
+
 	c = contours
 	while c is not None:
-		if len(c) > 10:
+		if len(c) > 20:
 			edge_pts += list(c)
 		if len(c) == 0: #'cus opencv is buggy and dumb
 			break
@@ -90,10 +116,31 @@ def detect_card(grey_image, grey_base, thresh=100):
 
 	if len(edge_pts) == 0:
 		return None
+
+	if debug_status == "edge_points":
+		tmp = cv.CloneImage(grey_image)
+		for pt in edge_pts:
+			cv.Circle(tmp, pt, 1, 255)
+		cv.ShowImage('debug', tmp)
+		return None
+
 	hull = cv.ConvexHull2(edge_pts, cv.CreateMemStorage(0), cv.CV_CLOCKWISE, 1)
+	if debug_status == "hull":
+		tmp = cv.CloneImage(grey_image)
+		cv.PolyLine(tmp, [hull], True, 255, 2)
+		cv.ShowImage('debug', tmp)
+		return None
+
 	lines = longest_lines(hull)
 	perim = sum(l['len'] for l in lines)
 	print perim
+
+	if debug_status == "longest_lines":
+		tmp = cv.CloneImage(grey_image)
+		for l in lines[0:4]:
+			cv.Line(tmp, l['c1'], l['c2'], 255, 2)
+		cv.ShowImage('debug', tmp)
+		return None
 
 	#likely to be a card. . .
 	#if abs(perim - 1200) < 160:
@@ -111,6 +158,15 @@ def detect_card(grey_image, grey_base, thresh=100):
 				corners[n] = line_intersect(sides[n], sides[(n+1) % 4])
 			if not all(corners):
 				return None
+
+			if debug_status == "corners":
+				tmp = cv.CloneImage(grey_image)
+				for c in corners:
+					cv.Circle(tmp, c, 4, 255)
+				cv.PolyLine(tmp, [corners], True, 255, 2)
+				cv.ShowImage('debug', tmp)
+				return None
+
 			#rotate corners so top-left corner is first. 
 			#that way we're clockwise from top-left
 			sorted_x = sorted(c[0] for c in corners)
@@ -234,6 +290,8 @@ def card_window_clicked(event, x, y, flags, param):
 def update_windows(n=3):
 	print "update windows!"
 	l = len(captures)
+	for i in xrange(1,4):
+		cv.ShowImage("card_%d" % i, None)
 	for i in xrange(1,min(n,l)+1):
 		print "setting ",i
 		tmp = cv.CloneImage(captures[-i])
@@ -247,6 +305,7 @@ def watch_for_card(camera):
 
 	global captures
 	global font
+	global debug_status
 	captures = []
 
 	font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0)
@@ -285,10 +344,16 @@ def watch_for_card(camera):
 			been_to_base = True
 		elif c == 114:
 			base = cv.CloneImage(grey)
+		elif c >= 48 and c <= 57:
+			num = c-48
+			debug_status = [None, "base", "grey", "diff", "edges", "contours", "edge_points", "hull", "longest_lines", "corners"][num]
+			print "debug_status: ",debug_status
 
 
 		#if we're stable-ish
-		if biggest_diff < 10:
+		if debug_status is not None:
+			detect_card(grey, base)
+		elif biggest_diff < 10:
 			#if we're similar to base, update base
 			#else, check for card
 			#base_diff = max(sum_squared(base, frame) / n_pixels for frame in recent_frames)
