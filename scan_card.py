@@ -75,22 +75,28 @@ def line_intersect(s1, s2):
 
 def detect_card(grey_image, grey_base, thresh=100):
 	if debug_status == "grey":
-		cv.ShowImage('debug', grey_image)
+		tmp = cv.CloneImage(grey_image)
+		cv.PutText(tmp, "greyscale", (1,24), font, 0)
+		cv.ShowImage('debug', tmp)
 		return None
 
 	if debug_status == "base":
-		cv.ShowImage('debug', grey_base)
+		tmp = cv.CloneImage(grey_base)
+		cv.PutText(tmp, "baseline", (1,24), font, 0)
+		cv.ShowImage('debug', tmp)
 		return None
 
 	diff = cv.CloneImage(grey_image)
 	cv.AbsDiff(grey_image, grey_base, diff)
 	if debug_status == "diff":
+		cv.PutText(diff, "difference", (1,24), font, 255)
 		cv.ShowImage('debug', diff)
 		return None
 
 	edges = cv.CloneImage(grey_image)
 	cv.Canny(diff, edges, thresh, thresh)
 	if debug_status == "edges":
+		cv.PutText(edges, "edges", (1,24), font, 255)
 		cv.ShowImage('debug', edges)
 		return None
 
@@ -103,6 +109,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 			if len(c) > 20:
 				cv.DrawContours(tmp, c, 255, 255, 0)
 			c = c.h_next()
+		cv.PutText(tmp, "contours", (1,24), font, 0)
 		cv.ShowImage('debug', tmp)
 		return None
 
@@ -121,6 +128,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 		tmp = cv.CloneImage(grey_image)
 		for pt in edge_pts:
 			cv.Circle(tmp, pt, 1, 255)
+		cv.PutText(tmp, "edge points", (1,24), font, 0)
 		cv.ShowImage('debug', tmp)
 		return None
 
@@ -128,6 +136,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 	if debug_status == "hull":
 		tmp = cv.CloneImage(grey_image)
 		cv.PolyLine(tmp, [hull], True, 255, 2)
+		cv.PutText(tmp, "convex hull", (1,24), font, 0)
 		cv.ShowImage('debug', tmp)
 		return None
 
@@ -139,6 +148,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 		tmp = cv.CloneImage(grey_image)
 		for l in lines[0:4]:
 			cv.Line(tmp, l['c1'], l['c2'], 255, 2)
+		cv.PutText(tmp, "longest lines", (1,24), font, 0)
 		cv.ShowImage('debug', tmp)
 		return None
 
@@ -164,6 +174,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 				for c in corners:
 					cv.Circle(tmp, c, 4, 255)
 				cv.PolyLine(tmp, [corners], True, 255, 2)
+				cv.PutText(tmp, "area to extract", (1,24), font, 0)
 				cv.ShowImage('debug', tmp)
 				return None
 
@@ -308,7 +319,7 @@ def watch_for_card(camera):
 	global debug_status
 	captures = []
 
-	font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0)
+	font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0, thickness=3)
 	img = cv.QueryFrame(camera)
 	size = cv.GetSize(img)
 	n_pixels = size[0]*size[1]
