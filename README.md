@@ -5,16 +5,18 @@ Card recognition and organization based on [opencv](opencv.willowgarage.com)
 This is a set of utilities to recognize and extract card images from a video feed, and then recognize those images against a known database.
 
 **dependencies and setup:**
- * Python (tested and written with version 2.7)
- * The primary external dependency OpenCV(opencv.willowgarage.com), which unfortunately can't be installed through PIP at the moment.
-    * I installed OpenCV and the Python bindings through Debian's package manager. Depending on your system, the install process may be different.
-    * This is written and tested with OpenCV Version 2.3.1-7, per the Debian packages
+
+* Python (tested and written with version 2.7)
+* The primary external dependency [OpenCV](opencv.willowgarage.com), which unfortunately can't be installed through PIP at the moment.
+ * I installed OpenCV and the Python bindings through Debian's package manager. Depending on your system, the install process may be different.
+ * This is written and tested with OpenCV Version 2.3.1-7, per the Debian packages
  * The app also requires numpy and Flask (for the webapp verifier). These can be installed with `pip install -r requirements.txt`
  * For recognition, you'll need a downloaded copy of all the images you want to match against, in a folder structure that tags the images with a 'set' and 'name'.
 
 ---
 
 **Non-computer dependencies:**
+
  * A computer-attached camera, such as a webcam, that is compatible with OpenCV. On Linux, any V4L compatible camera should work.
  * A scanning area. This consists of:
     1. A flat, blank, stable 'background' mat to scan on.
@@ -25,9 +27,10 @@ This is a set of utilities to recognize and extract card images from a video fee
 
 ---
 
-**Walkthrough of scanning and recognition process**
+***Walkthrough of scanning and recognition process***
 
-*Scanning:*
+**Scanning:**
+
   1. Set up the scanning area, with a camera attached to your computer.
   1. open a python shell
   1. `import cv`
@@ -45,18 +48,20 @@ This is a set of utilities to recognize and extract card images from a video fee
   1. You can import that folder to an sqlite3 database with `scan_card.folder_to_db(<boxnum>)
 
 
-*Matching:*
+**Matching:**
+
   1. You need to have a downloaded set of images to match against. In my case, I matched the [Cockatrice](http://cockatrice.de) folder structure, which is '/setabbrev/cardname.jpg'
   1. import the known images with `known = scan_card.load_sets(<base directory>, <list of set abbreviations>`
     * for example, this app has LIKELY_SETS, which is a list of the sets most of my cards come from.
   1. (optional) create a debug output window, with `cv.NamedWindow('debug')`
-  1. run the matching process with `scan_card.match_db_cards(<known>)_`. Depending on the number of cards, this may take a few hours.
+  1. run the matching process with `scan_card.match_db_cards(<known>)`. Depending on the number of cards, this may take a few hours.
   1. Afterwards, you will likely need to verify the matches.
 
-*Verification:*
+**Verification:**
+
   1. edit website.py with your base dir for downloaded images. (line 25)
   1. run `python website.py`
-  1. open a webbrowser to [http://localhost:5000/verify_scans]
+  1. open a webbrowser to [http://localhost:5000/verify_scans](http://localhost:5000/verify_scans)
   1. visually scan over the pairs of scanned images on the left and matched images on the right. I recommend using tab to run through these.
   1. Where there's a discrepancy, type in the correct set name and card name. the 'match' image will automatically update.
   1. when you complete a page, press 'submit' to save any changes to the database, and mark all images on that page as 'verified'
