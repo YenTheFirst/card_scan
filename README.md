@@ -43,6 +43,7 @@ This is a set of utilities to recognize and extract card images from a video fee
     * you can press 'escape' to exit the scan loop.
   1. After you're done (via pressing 'escape'), you can save the captures to a folder with `scan_card.save_captures(<boxnum>, <captures>`
   1. You can import that folder to an sqlite3 database with `scan_card.folder_to_db(<boxnum>)
+  1. You should then store the actual cards in some organizational system, such as a numbered box corresponding to the number you passed to `folder_to_db`
 
 
 *Matching:*
