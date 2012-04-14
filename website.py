@@ -22,7 +22,7 @@ def db_image(img_id):
 
 @app.route('/known_image/<set_abbrev>/<name>')
 def known_image(set_abbrev,name):
-	base_dir = '/home/talin/Cockatrice/cards/downloadedPics/'
+	base_dir = '/home/talin/Cockatrice/cards/downloadedPics' #'' #YOUR BASE_DIR HERE
 	sub_path = os.path.join(set_abbrev,name+'.full.jpg')
 	path = safe_join(base_dir, sub_path)
 	if os.path.exists(path):
@@ -70,6 +70,7 @@ def verify_scans():
 	results = [dict(zip(cols,r)) for r in cursor.fetchall()]
 	return render_template('verify.html', cards=results)
 
+	'/home/talin/Cockatrice/cards/downloadedPics/'
 
 if __name__ == '__main__':
 	app.run(debug=True)
