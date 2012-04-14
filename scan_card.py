@@ -456,7 +456,7 @@ def score(card, known, method):
 
 def match_card(card, known_set):
 	mag, grad = gradient(card)
-	h = angle_hist(grad)
+	#h = angle_hist(grad)
 	#limited_set = sorted([(cv.CompareHist(h, hist, cv.CV_COMP_CORREL), name, set, g) for name,set,g,hist in known_set], reverse=True)[0:1000]
 	#h_score, name, set, img = max(limited_set,
 	#	key = lambda (h_score, name, set, known): score(grad, known, cv.CV_TM_CCOEFF)
