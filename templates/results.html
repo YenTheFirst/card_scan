@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+	<head>
+		<style type='text/css'>
+			td { vertical-align: bottom; }
+		</style>
+
+	</head>
+	<body>
+		<table>
+			<tr>
+				<th>Scanned Image</th>
+				<th>Set</th>
+				<th>Name</th>
+				<th>Box</th>
+				<th>Box Index</th>
+			</tr>
+			{% for card in cards %}
+			<tr>
+				<td><img src="/db_image/{{card['rowid']}}"></td>
+				<td>{{card['set_name']}}</td>
+				<td>{{card['name']}}</td>
+				<td>{{card['box']}}</td>
+				<td>{{card['box_index']}}</td>
+			</tr>
+			{% endfor %}
+		</table>
+
+	</body>
+</html>
+			
+				
