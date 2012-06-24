@@ -31,12 +31,12 @@
 				</tr>
 				{% for card in cards %}
 				<tr>
-					<td><img class='known_card' src="/known_image/{{card['set_name']}}/{{card['name']}}"></td>
-					<td><img src="/db_image/{{card['rowid']}}"></td>
-					<td><input name='{{card['rowid']}}_set_name' onkeyup='update_textbox(this)' class='set_name' type='text' value='{{card['set_name']}}' size=3/></td>
-					<td><input name='{{card['rowid']}}_name' onkeyup='update_textbox(this)' class='name' type='text' value='{{card['name']}}' size=26/></td>
-					<td>{{card['box']}}</td>
-					<td>{{card['box_index']}}</td>
+					<td><img class='known_card' src="/known_image/{{card.set_name}}/{{card.name}}"></td>
+					<td><img src="/db_image/{{card.rowid}}"></td>
+					<td><input name='{{card.rowid}}_set_name' onkeyup='update_textbox(this)' class='set_name' type='text' value='{{card.set_name}}' size=3/></td>
+					<td><input name='{{card.rowid}}_name' onkeyup='update_textbox(this)' class='name' type='text' value='{{card.name}}' size=26/></td>
+					<td>{{card.box}}</td>
+					<td>{{card.box_index}}</td>
 				</tr>
 				{% endfor %}
 			</table>

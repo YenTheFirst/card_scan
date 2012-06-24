@@ -6,6 +6,8 @@ import os
 import cv
 from itertools import groupby
 
+from models import InvCard, FixLog
+from elixir import session
 
 app = Flask(__name__)
 
@@ -66,9 +68,6 @@ def search():
 
 @app.route('/verify_scans', methods=['POST', 'GET'])
 def verify_scans():
-	connection = sqlite3.connect('inventory.sqlite3')
-	cursor = connection.cursor()
-
 	if request.method == 'POST':
 		#split_names = [name.split('_',1) + [val] for name,val in request.form]
 		split_names = [name.split('_',1) + [val] for name,val in request.form.items()]
@@ -78,21 +77,25 @@ def verify_scans():
 			d[rid] = dict([a[1:] for a in list(args)])
 
 		for rid, attribs in d.items():
-			cursor.execute("select name, set_name, scan_png from inv_cards where rowid = ?", [rid])
-			r = cursor.fetchone()
-			if r[0] != attribs['name'] or r[1] != attribs['set_name']:
-				cursor.execute("insert into fix_log (card_rowid, orig_set, orig_name, new_set, new_name, scan_png) values (?,?,?,?,?,?)", [rid, r[1], r[0], attribs['set_name'], attribs['name'], r[2]])
-				cursor.execute("update inv_cards set name = ?, set_name = ?, recognition_status = ? where rowid = ?", [attribs['name'], attribs['set_name'], 'verified', rid])
-			else:
-				cursor.execute("update inv_cards set recognition_status = ? where rowid = ?", ['verified',rid])
-			connection.commit()
+			card = InvCard.query.filter_by(rowid=rid).one()
+			if card.name != attribs['name'] or card.set_name != attribs['set_name']:
+				FixLog(
+						card = card,
+						orig_set = card.set_name,
+						orig_name = card.name,
+						new_set = attribs['set_name'],
+						new_name = attribs['name'],
+						scan_png = card.scan_png
+				)
+				card.name = attribs['name']
+				card.set_name = attribs['set_name']
 
-	cols = ['rowid', 'name', 'set_name', 'box', 'box_index', 'recognition_status']
-	cursor.execute("select %s from inv_cards where recognition_status='candidate_match' order by name limit 50" % ", ".join(cols))
-	results = [dict(zip(cols,r)) for r in cursor.fetchall()]
+			card.recognition_status = 'verified'
+			session.commit()
+
+	results = InvCard.query.filter_by(recognition_status='candidate_match').order_by('name').limit(50).all()
 	return render_template('verify.html', cards=results)
 
-	'/home/talin/Cockatrice/cards/downloadedPics/'
 
 if __name__ == '__main__':
 	app.run(debug=True)
