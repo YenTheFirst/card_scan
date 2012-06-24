@@ -13,8 +13,13 @@
 						<ul>
 						{% for card in cards %}
 						<li>
+						{% if card.inventory_status == "present" %}
 							<input type='checkbox' id='remove_{{card.rowid}}' name='remove_{{card.rowid}}'>
 							{{card.set_name}}/{{card.name}}: box {{card.box}}, {{card.box_index}}
+						{% else %}
+							<input type='checkbox' disabled='disabled'>
+							{{card.set_name}}/{{card.name}}: Temporarily out.
+						{% endif %}
 						</li>
 						{% endfor %}
 						</ul>

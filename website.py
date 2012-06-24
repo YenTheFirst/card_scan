@@ -176,7 +176,8 @@ def fetch_decklist():
 			if name in BASIC_LANDS:
 				continue
 
-			results[name] = (InvCard.query.filter_by(name=name).all(), num)
+			cards = InvCard.query.filter_by(name=name).filter(InvCard.inventory_status != "permanently_gone").all()
+			results[name] = (cards, num)
 	
 	return render_template("fetch_decklist.html",decklist=decklist,results=results)
 
