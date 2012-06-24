@@ -305,7 +305,7 @@ def watch_for_card(camera):
 				cv.PutText(tmp, "%s" % my_diff, (40, 24), font, (255, 255, 255))
 				cv.ShowImage('dbg%s' % (i+1), tmp)"""
 			#print "stable. corr = %s. moved = %s. been_to_base = %s" % (base_corr, has_moved, been_to_base)
-			if base_corr > 0.75:
+			if base_corr > 0.75 and not been_to_base:
 				base = cv.CloneImage(grey)
 			#	cv.ShowImage('debug', base)
 				has_moved = False
