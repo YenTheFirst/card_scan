@@ -166,8 +166,11 @@ def fetch_decklist():
 				num = int(match.group('num'))
 				name = match.group('name')
 			else:
-				num = 1
-				name = line
+				if line:
+					num = 1
+					name = line
+				else:
+					continue
 			
 			#skip basic lands
 			if name in BASIC_LANDS:
