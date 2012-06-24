@@ -93,7 +93,7 @@ def detect_card(grey_image, grey_base, thresh=100):
 	hull = cv.ConvexHull2(edge_pts, cv.CreateMemStorage(0), cv.CV_CLOCKWISE, 1)
 	lines = longest_lines(hull)
 	perim = sum(l['len'] for l in lines)
-	print perim
+	#print perim
 
 	#likely to be a card. . .
 	#if abs(perim - 1200) < 160:
@@ -101,8 +101,8 @@ def detect_card(grey_image, grey_base, thresh=100):
 		#extrapolate the rectangle from the hull.
 		#if our 4 longest lines make up 80% of our perimiter
 		l = sum(l['len'] for l in lines[0:4])
-		print "l = ",l
-		if l / perim  >0.8:
+		#print "l = ",l
+		if l / perim  >0.7:
 			#we probably have a high-quality rectangle. extrapolate!
 			sides = sorted(lines[0:4], key = lambda x: x['angle'])
 			#sides are in _some_ clockwise order.
@@ -232,10 +232,10 @@ def card_window_clicked(event, x, y, flags, param):
 		update_windows()
 
 def update_windows(n=3):
-	print "update windows!"
+	#print "update windows!"
 	l = len(captures)
 	for i in xrange(1,min(n,l)+1):
-		print "setting ",i
+		#print "setting ",i
 		tmp = cv.CloneImage(captures[-i])
 		cv.PutText(tmp, "%s" % (l-i+1), (1,24), font, (255,255,255))
 		cv.ShowImage("card_%d" % i, tmp)
@@ -272,7 +272,7 @@ def watch_for_card(camera):
 		cv.PutText(img, "%s" % biggest_diff, (1,24), font, (255,255,255))
 		cv.ShowImage('win',img)
 		recent_frames.append(cv.CloneImage(grey))
-		if len(recent_frames) > 5:
+		if len(recent_frames) > 3:
 			del recent_frames[0]
 
 		#check for keystroke
@@ -310,6 +310,7 @@ def watch_for_card(camera):
 			#	cv.ShowImage('debug', base)
 				has_moved = False
 				been_to_base = True
+				print "STATE: been to base. waiting for move"
 			elif has_moved and been_to_base:
 				corners = detect_card(grey, base)
 				if corners is not None:
@@ -320,7 +321,10 @@ def watch_for_card(camera):
 					#cv.ShowImage('card', card)
 					has_moved = False
 					been_to_base = False
+					print "STATE: detected. waiting for go to base"
 		else:
+			if not has_moved:
+				print "STATE: has moved. waiting for stable"
 			has_moved = True
 
 
