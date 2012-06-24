@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+	<head>
+	</head>
+	<body>
+		{% if results %}
+		<form action='remove_all' method='post'>
+			<ul>
+				{% for name, cards in results.items() %}
+				<li>
+					{{name}}: {{cards|count}} results
+					{% if cards %}
+						<ul>
+						{% for card in cards %}
+						<li>
+							<input type='checkbox' id='remove_{{card.rowid}}'>
+							{{card.set_name}}/{{card.name}}: box {{card.box}}, {{card.box_index}}
+						</li>
+						{% endfor %}
+						</ul>
+					{% endif %}
+				</li>
+				{% endfor %}
+			</ul>
+
+			<label for="reason">Reason: </label> <input type='text' name='reason'><br>
+			<input type='submit' text='Remove selected from boxes'>
+		</form>
+		<hr>
+
+
+		{% endif %}
+
+
+		<form action='fetch_decklist' method='get'>
+			<textarea name='decklist' cols=30 rows=23>{{decklist}}</textarea>
+			<input type='submit' text="Search">
+		</form>
+	</body>
+</html>

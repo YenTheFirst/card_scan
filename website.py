@@ -5,6 +5,7 @@ from StringIO import StringIO
 import os
 import cv
 from itertools import groupby
+import re
 
 from models import InvCard, FixLog
 from elixir import session, setup_all
@@ -12,6 +13,8 @@ from sqlalchemy.orm.exc import NoResultFound
 
 setup_all()
 app = Flask(__name__)
+
+BASIC_LANDS = ["Plains", "Island", "Swamp", "Mountain", "Forest"]
 
 @app.route('/db_image/<int:img_id>')
 def db_image(img_id):
@@ -94,6 +97,32 @@ def verify_scans():
 
 	results = InvCard.query.filter_by(recognition_status='candidate_match').order_by('name').limit(50).all()
 	return render_template('verify.html', cards=results)
+
+
+@app.route("/fetch_decklist")
+def fetch_decklist():
+	decklist = request.args.get("decklist")
+	results = {}
+
+	if decklist:
+
+		for line in decklist.splitlines():
+			#get number and name of this card
+			match = re.match('(?P<num>\d+) (?P<name>.*)',line)
+			if match:
+				num = int(match.group('num'))
+				name = match.group('name')
+			else:
+				num = 1
+				name = line
+			
+			#skip basic lands
+			if name in BASIC_LANDS:
+				continue
+
+			results[name] = InvCard.query.filter_by(name=name).all()
+	
+	return render_template("fetch_decklist.html",decklist=decklist,results=results)
 
 
 if __name__ == '__main__':
