@@ -1,2 +1,4 @@
 Flask==0.8
 numpy==1.6.1
+SQLAlchemy==0.7.8
+Flask==0.8
