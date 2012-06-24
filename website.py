@@ -7,20 +7,19 @@ import cv
 from itertools import groupby
 
 from models import InvCard, FixLog
-from elixir import session
+from elixir import session, setup_all
+from sqlalchemy.orm.exc import NoResultFound
 
+setup_all()
 app = Flask(__name__)
 
 @app.route('/db_image/<int:img_id>')
 def db_image(img_id):
-	connection = sqlite3.connect('inventory.sqlite3')
-	cursor = connection.cursor()
-	cursor.execute('select scan_png from inv_cards where rowid = ?', [img_id])
-	r = cursor.fetchone()
-	if r is None:
+	try:
+		card = InvCard.query.filter_by(rowid=img_id).one()
+		return send_file(StringIO(card.scan_png), 'image/png')
+	except NoResultFound:
 		return ("img not found", 404)
-	else:
-		return send_file(StringIO(r[0]), 'image/png')
 
 @app.route('/known_image/<set_abbrev>/<name>')
 def known_image(set_abbrev,name):
