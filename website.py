@@ -37,7 +37,7 @@ def search():
 	page_size = 10;
 	connection = sqlite3.connect('inventory.sqlite3')
 	cursor = connection.cursor()
-	cols = ['rowid', 'name', 'set_name', 'box', 'box_index', 'status']
+	cols = ['rowid', 'name', 'set_name', 'box', 'box_index', 'recognition_status']
 	where_clause = ""
 	where_params = []
 	for key in cols:
@@ -82,13 +82,13 @@ def verify_scans():
 			r = cursor.fetchone()
 			if r[0] != attribs['name'] or r[1] != attribs['set_name']:
 				cursor.execute("insert into fix_log (card_rowid, orig_set, orig_name, new_set, new_name, scan_png) values (?,?,?,?,?,?)", [rid, r[1], r[0], attribs['set_name'], attribs['name'], r[2]])
-				cursor.execute("update inv_cards set name = ?, set_name = ?, status = 3 where rowid = ?", [attribs['name'], attribs['set_name'], rid])
+				cursor.execute("update inv_cards set name = ?, set_name = ?, recognition_status = ? where rowid = ?", [attribs['name'], attribs['set_name'], 'verified', rid])
 			else:
-				cursor.execute("update inv_cards set status = 3 where rowid = ?", [rid])
+				cursor.execute("update inv_cards set recognition_status = ? where rowid = ?", ['verified',rid])
 			connection.commit()
 
-	cols = ['rowid', 'name', 'set_name', 'box', 'box_index', 'status']
-	cursor.execute("select %s from inv_cards where status=1 order by name limit 50" % ", ".join(cols))
+	cols = ['rowid', 'name', 'set_name', 'box', 'box_index', 'recognition_status']
+	cursor.execute("select %s from inv_cards where recognition_status='candidate_match' order by name limit 50" % ", ".join(cols))
 	results = [dict(zip(cols,r)) for r in cursor.fetchall()]
 	return render_template('verify.html', cards=results)
 

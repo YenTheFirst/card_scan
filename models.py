@@ -1,4 +1,4 @@
-from elixir import metadata, Entity, Field, Integer, UnicodeText, using_options, BLOB
+from elixir import metadata, Entity, Field, Integer, UnicodeText, using_options, BLOB, Enum
 
 metadata.bind = "sqlite:///inventory.sqlite3"
 
@@ -8,7 +8,7 @@ class InvCard(Entity):
 	box = Field(UnicodeText)
 	scan_png = Field(BLOB)
 	box_index = Field(Integer)
-	status = Field(Integer)
+	recognition_status = Field(Enum('scanned','candidate_match','incorrect_match','verified'))
 
 	rowid = Field(Integer, primary_key=True)
 

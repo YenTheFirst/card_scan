@@ -409,7 +409,7 @@ def match_db_cards(known):
 	connection = sqlite3.connect("inventory.sqlite3")
 	try:
 		cursor = connection.cursor()
-		cursor.execute("select rowid, scan_png from inv_cards where status = 0")
+		cursor.execute("select rowid, scan_png from inv_cards where recognition_status is 'scanned'")
 		row = cursor.fetchone()
 		while row is not None:
 			try:
@@ -420,7 +420,7 @@ def match_db_cards(known):
 				cv.ShowImage('debug', img)
 				print "set row %s to %s/%s" % (id, set, card)
 				update_c = connection.cursor()
-				update_c.execute('update inv_cards set name=?, set_name=?, status = 1 where rowid=?', [card, set, id])
+				update_c.execute("update inv_cards set name=?, set_name=?, recognition_status=? where rowid=?", [card, set, 'candidate_match', id])
 				connection.commit()
 			except KeyboardInterrupt as e:
 				raise e
