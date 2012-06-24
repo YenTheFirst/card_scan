@@ -23,7 +23,15 @@
 				{% endfor %}
 			</ul>
 
-			<label for="reason">Reason: </label> <input type='text' name='reason'><br>
+			<label for="reason">Reason: </label> <input type='text' name='reason' id='reason'><br>
+			<p>
+			Is Permanent?<br/>
+			
+			<label for='is_permanent_yes'>Yes</label><input type='radio' name='is_permanent' id='is_permanent_yes'/><br/>
+			<label for='is_permanent_no'>No</label><input type='radio' name='is_permanent' id='is_permanent_no'/><br/>
+			
+			</p>
+
 			<input type='submit' text='Remove selected from boxes'>
 		</form>
 		<hr>
