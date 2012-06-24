@@ -1,6 +1,6 @@
 from elixir import metadata, Entity, Field, using_options
 from elixir import Integer, UnicodeText, BLOB, Enum, DateTime
-from elixir import ManyToOne, OneToMany
+from elixir import ManyToOne, OneToMany, OneToOne
 
 metadata.bind = "sqlite:///inventory.sqlite3"
 
@@ -12,6 +12,7 @@ class InvCard(Entity):
 	box_index = Field(Integer)
 	recognition_status = Field(Enum('scanned','candidate_match','incorrect_match','verified'))
 	inv_logs = OneToMany('InvLog')
+	fix_log = OneToOne('FixLog')
 
 	rowid = Field(Integer, primary_key=True)
 
@@ -41,3 +42,17 @@ class InvLog(Entity):
 
 		return "<%s: %s %s %s. \"%s\">" % (self.date, card_repr, dir_text, self.card.box, self.reason)
 
+class FixLog(Entity):
+	card = ManyToOne('InvCard')
+	orig_set = Field(UnicodeText)
+	orig_name = Field(UnicodeText)
+	new_set = Field(UnicodeText)
+	new_name = Field(UnicodeText)
+	scan_png = Field(BLOB)
+
+	rowid = Field(Integer, primary_key = True)
+
+	using_options(tablename='fix_log')
+
+	def __repr__(self):
+		return "<card %d was corrected from %s/%s to %s/%s>" % (self.card.rowid, self.orig_set, self.orig_name, self.new_set, self.new_name)
