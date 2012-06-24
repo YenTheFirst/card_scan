@@ -173,7 +173,7 @@ def fetch_decklist():
 			if name in BASIC_LANDS:
 				continue
 
-			results[name] = InvCard.query.filter_by(name=name).all()
+			results[name] = (InvCard.query.filter_by(name=name).all(), num)
 	
 	return render_template("fetch_decklist.html",decklist=decklist,results=results)
 

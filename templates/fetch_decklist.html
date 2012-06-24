@@ -4,16 +4,16 @@
 	</head>
 	<body>
 		{% if results %}
-		<form action='remove_all' method='post'>
+		<form action='remove_cards' method='post'>
 			<ul>
-				{% for name, cards in results.items() %}
+				{% for name, (cards,desired_count) in results.items() %}
 				<li>
-					{{name}}: {{cards|count}} results
+					{{name}}: {{cards|count}}/{{desired_count}}
 					{% if cards %}
 						<ul>
 						{% for card in cards %}
 						<li>
-							<input type='checkbox' id='remove_{{card.rowid}}'>
+							<input type='checkbox' id='remove_{{card.rowid}}' name='remove_{{card.rowid}}'>
 							{{card.set_name}}/{{card.name}}: box {{card.box}}, {{card.box_index}}
 						</li>
 						{% endfor %}
