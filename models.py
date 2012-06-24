@@ -22,7 +22,7 @@ class InvCard(Entity):
 
 
 	def __repr__(self):
-		return "<%s/%s (%s/%d)>" % (self.set_name, self.name, self.box, self.box_index)
+		return "<%s/%s (%s/%s)>" % (self.set_name, self.name, self.box, self.box_index)
 
 class InvLog(Entity):
 	card = ManyToOne('InvCard')
