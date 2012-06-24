@@ -6,8 +6,9 @@ import os
 import cv
 from itertools import groupby
 import re
+from datetime import datetime
 
-from models import InvCard, FixLog
+from models import InvCard, FixLog, InvLog
 from elixir import session, setup_all
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -97,6 +98,58 @@ def verify_scans():
 
 	results = InvCard.query.filter_by(recognition_status='candidate_match').order_by('name').limit(50).all()
 	return render_template('verify.html', cards=results)
+
+
+@app.route("/remove_cards", methods=["POST"])
+def remove_cards():
+	if request.method == 'POST':
+		results = []
+
+		now = datetime.now()
+		reason = request.form['reason']
+		if not reason:
+			raise Exception("reason required")
+		
+		if not request.form['is_permanent']:
+			raise Exception("is_permanent required")
+		if request.form['is_permanent'] == 'yes':
+			new_status = 'permanently_gone'
+		else:
+			new_status = 'temporarily_out'
+
+		try:
+
+			for key, val in request.form.items():
+				match = re.match('remove_(?P<num>\d+)', key)
+				if not match: #if this isn't remove_id
+					continue
+				if not val: #if the browser passed us an unchecked checkbox
+					continue
+
+				rid = int(match.group('num'))
+
+				card = InvCard.query.filter_by(rowid=rid).one()
+				if card.inventory_status != "present":
+					raise Exception("can't remove non-present card")
+
+				results.append({
+					'rowid': card.rowid,
+					'set_name': card.set_name,
+					'name': card.name,
+					'box': card.box,
+					'box_index': card.box_index})
+
+				card.box = None
+				card.box_index = None
+				card.inventory_status = new_status
+				InvLog(card=card, direction='removed', reason=reason,date=now)
+			session.commit()
+
+			return render_template("removed_cards.html", removed_list=results)
+		except Exception as e:
+			session.rollback()
+			raise e
+			#todo. error page.
 
 
 @app.route("/fetch_decklist")
