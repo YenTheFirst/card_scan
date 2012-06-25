@@ -8,6 +8,7 @@ from itertools import groupby
 import re
 from datetime import datetime
 from operator import attrgetter
+import urllib2
 
 from models import InvCard, FixLog, InvLog
 from elixir import session, setup_all, metadata
@@ -228,7 +229,11 @@ def remove_cards():
 
 @app.route("/fetch_decklist")
 def fetch_decklist():
-	decklist = request.args.get("decklist")
+	if request.args.get("url"):
+		decklist = urllib2.urlopen(request.args.get("url")).read()
+	else:
+		decklist = request.args.get("decklist")
+	
 	results = {}
 	sum_all = 0
 	sum_have = 0

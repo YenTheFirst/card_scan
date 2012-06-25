@@ -47,7 +47,8 @@
 
 
 		<form action='fetch_decklist' method='get'>
-			<textarea name='decklist' cols=30 rows=23>{{decklist}}</textarea>
+			<textarea name='decklist' cols=30 rows=23>{{decklist or ""}}</textarea><br/>
+			<input type='text' name='url'>
 			<input type='submit' text="Search">
 		</form>
 	</body>
