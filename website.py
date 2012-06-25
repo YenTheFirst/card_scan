@@ -218,7 +218,8 @@ def remove_cards():
 				InvLog(card=card, direction='removed', reason=reason,date=now)
 			session.commit()
 
-			return render_template("removed_cards.html", removed_list=results)
+			results = sorted(results, key = lambda r: (r['box'],r['box_index']))
+			return render_template("results.html", cards=results)
 		except Exception as e:
 			session.rollback()
 			raise e
