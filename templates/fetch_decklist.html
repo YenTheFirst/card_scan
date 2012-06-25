@@ -4,6 +4,7 @@
 	</head>
 	<body>
 		{% if results %}
+		<h2>{{total[0]}} / {{total[1]}} cards in inventory.</h2>
 		<form action='remove_cards' method='post'>
 			<ul>
 				{% for name, (cards,desired_count) in results.items() %}

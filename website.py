@@ -230,6 +230,8 @@ def remove_cards():
 def fetch_decklist():
 	decklist = request.args.get("decklist")
 	results = {}
+	sum_all = 0
+	sum_have = 0
 
 	if decklist:
 
@@ -252,8 +254,10 @@ def fetch_decklist():
 
 			cards = InvCard.query.filter_by(name=name).filter(InvCard.inventory_status != "permanently_gone").all()
 			results[name] = (cards, num)
+			sum_all += num
+			sum_have += min(num, len(cards))
 	
-	return render_template("fetch_decklist.html",decklist=decklist,results=results)
+	return render_template("fetch_decklist.html",decklist=decklist,results=results, total=(sum_have, sum_all))
 
 
 if __name__ == '__main__':
