@@ -7,10 +7,12 @@ import cv
 from itertools import groupby
 import re
 from datetime import datetime
+from operator import attrgetter
 
 from models import InvCard, FixLog, InvLog
-from elixir import session, setup_all
+from elixir import session, setup_all, metadata
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import func
 
 setup_all()
 app = Flask(__name__)
@@ -98,6 +100,77 @@ def verify_scans():
 
 	results = InvCard.query.filter_by(recognition_status='candidate_match').order_by('name').limit(50).all()
 	return render_template('verify.html', cards=results)
+
+#now the fun bit, where we pick boxes to reinsert into.
+#the goal is to reuse existing boxes, and minimize the number of box seeks a human has to do.
+#it would also be nice to keep existing groups of cards together.
+
+#actually, I'll do that later. for now, naiively fill up the empties boxes we know about.
+def fit_boxes(box_counts, num_cards):
+	if num_cards == 0:
+		return []
+
+	largest = box_counts[0][1]
+	if num_cards > largest:
+		#if we're bigger than max, fill up max and continue
+		return [box_counts[0]] + fit_boxes(box_counts[1:], num_cards - largest)
+	else:
+		#else, find the smallest box we fit in
+		box = next(box for box, count in reversed(box_counts) if count >= num_cards)
+		return [(box, num_cards)]
+
+
+@app.route("/reinsert_cards", methods=["POST","GET"])
+def reinsert_cards():
+	if request.method == 'POST':
+		#post. reinsert the given rowids
+		now = datetime.now()
+		reason = request.form["reason"]
+		if not reason:
+			raise Exception("reason required")
+
+		#get the cards
+		rids=[]
+		for key, val in request.form.items():
+			if key.startswith("reinsert_"):
+				rids.append(int(key.split("_")[1]))
+		cards = InvCard.query.filter(InvCard.rowid.in_(rids)).order_by('name').all()
+
+		#make sure we can insert them
+		if any(card.inventory_status != "temporarily_out" for card in cards):
+			raise Exception("card is not temporarily out")
+
+		box_capacity = list(metadata.bind.execute("select box,60 - count(*) as c from inv_cards where box not null group by box having c>0 order by c desc;"))
+		
+		#fill in each box with count cards
+		i=0
+		fill_orders = fit_boxes(box_capacity, len(cards))
+		fill_orders = sorted(fill_orders, key=lambda (box,count): int(box))
+
+		for box, count in fill_orders:
+			max_index = session.query(func.max(InvCard.box_index)).filter_by(box='1').one()[0]
+			for card in cards[i:count]:
+				max_index += 1
+				card.box = box
+				card.box_index = max_index
+				card.inventory_status = 'present'
+				InvLog(card=card,date=now,direction='added',reason=reason)
+			i+=count
+
+		session.commit()
+
+		#we're done. render the list.
+		return render_template("results.html", cards=cards)
+
+	else:
+		#get the temporary_out cards to reinsert
+		#it will be a list of ((date, reason), (cardlist)) tuples
+		cards = InvCard.query.filter_by(inventory_status = "temporarily_out")
+		outstanding_cards = groupby(cards, lambda c: (c.most_recent_log().date, c.most_recent_log().reason))
+		outstanding_cards = [(key, sorted(val, key=attrgetter('name'))) for key, val in outstanding_cards]
+		return render_template("outstanding_cards.html",outstanding_cards=outstanding_cards)
+		
+
 
 
 @app.route("/remove_cards", methods=["POST"])

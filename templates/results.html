@@ -9,7 +9,6 @@
 	<body>
 		<table>
 			<tr>
-				<th>Scanned Image</th>
 				<th>Set</th>
 				<th>Name</th>
 				<th>Box</th>
@@ -17,7 +16,6 @@
 			</tr>
 			{% for card in cards %}
 			<tr>
-				<td><img src="/db_image/{{card['rowid']}}"></td>
 				<td>{{card['set_name']}}</td>
 				<td>{{card['name']}}</td>
 				<td>{{card['box']}}</td>

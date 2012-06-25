@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+	<head>
+	</head>
+	<body>
+		<form action="/reinsert_cards" method="post">
+			<ul>
+				{% for (date, reason), cardlist in outstanding_cards %}
+				<li>{{date}}: {{reason}}
+					<ul>
+						{% for card in cardlist %}
+						<li>
+							<input type="checkbox" name="reinsert_{{card.rowid}}">
+							{{card.set_name}}/{{card.name}}
+						</li>
+						{% endfor %}
+					</ul>
+				</li>
+				{% endfor %}
+			</ul>
+			<label for="reason">Notes: </label><input name="reason" id="reason" type="text"><br/>
+			<input type="submit" text="Reinsert">
+
+		</form>
+
+	</body>
+</html>

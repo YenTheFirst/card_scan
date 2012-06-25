@@ -20,6 +20,8 @@ class InvCard(Entity):
 
 	using_options(tablename='inv_cards')
 
+	def most_recent_log(self):
+		return sorted(self.inv_logs, key = lambda x: x.date)[-1]
 
 	def __repr__(self):
 		return "<%s/%s (%s/%s)>" % (self.set_name, self.name, self.box, self.box_index)
