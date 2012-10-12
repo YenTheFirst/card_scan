@@ -400,7 +400,7 @@ def folder_to_db(num):
 			path = os.path.join(dir, name)
 			img = open(path).read()
 
-			cursor.execute('insert into inv_cards (scan_png, box, box_index) values (?, ?, ?)', [sqlite3.Binary(img), num, i])
+			cursor.execute('insert into inv_cards (scan_png, box, box_index, recognition_status) values (?, ?, ?, ?)', [sqlite3.Binary(img), num, i, "scanned"])
 		connection.commit()
 	finally:
 		connection.close()
