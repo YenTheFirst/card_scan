@@ -2,3 +2,6 @@ capture_*/
 *pyc
 *.sqlite3
 art/
+
+*~
+.*
