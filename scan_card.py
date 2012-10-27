@@ -470,6 +470,26 @@ def match_card(card, known_set):
 	)
 	return (name, set)
 
+def dct_hash(img):
+	img = float_version(img)
+	small_img = cv.CreateImage((32, 32), 32, 1)
+	cv.Resize(img[20:190, 20:205], small_img)
+
+	dct = cv.CreateMat(32, 32, cv.CV_32FC1)
+	cv.DCT(small_img, dct, cv.CV_DXT_FORWARD)
+	dct = dct[1:9, 1:9]
+
+	avg = cv.Avg(dct)[0]
+	dct_bit = cv.CreateImage((8,8),8,1)
+	cv.CmpS(dct, avg, dct_bit, cv.CV_CMP_GT)
+
+	return [dct_bit[y, x]==255.0
+			for y in xrange(8)
+			for x in xrange(8)]
+
+def hamming_dist(h1,h2):
+	return sum(b1 != b2 for (b1,b2) in zip(h1,h2))
+
 LIKELY_SETS = [
 	'DKA', 'ISD',
 	'NPH', 'MBS', 'SOM',
