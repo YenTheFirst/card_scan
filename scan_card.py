@@ -5,9 +5,8 @@ import sqlite3
 import numpy
 import cv2
 from detect_card import detect_card
+from cv_utils import float_version, show_scaled, sum_squared
 
-#**************************
-#this is the 'detect card' bit
 def get_card(color_capture, corners):
 	target = [(0,0), (223,0), (223,310), (0,310)]
 	mat = cv.CreateMat(3,3, cv.CV_32FC1)
@@ -16,60 +15,6 @@ def get_card(color_capture, corners):
 	cv.WarpPerspective(color_capture, warped, mat)
 	cv.SetImageROI(warped, (0,0,223,310) )
 	return warped
-
-def float_version(img):
-	tmp = cv.CreateImage( cv.GetSize(img), 32, 1)
-	cv.ConvertScale(img, tmp, 1/255.0)
-	return tmp
-
-def mask_for(img, pt):
-	tmp = cv.CreateImage( cv.GetSize(img), 8, 1)
-	cv.Set(tmp, 255)
-	cv.Rectangle(tmp, (0,0), pt, 0, -1)
-	return tmp
-
-def high_freq(img, pct):
-	f = float_version(img)
-	cv.DFT(f, f, cv.CV_DXT_FORWARD)
-	mask = cv.CreateImage( cv.GetSize(img), 8, 1)
-	cv.Set(mask, 0)
-	#cv.Set(mask, 255)
-	w, h = cv.GetSize(img)
-	dw = int(w*pct*0.5)
-	dh = int(h*pct*0.5)
-	#cv.Rectangle(mask, (0,0), (int(w*pct), int(h*pct)), 255, -1)
-	#cv.Rectangle(mask, (int(w*pct), int(h*pct)), (w,h), 255, -1)
-	cv.Rectangle(mask, (w/2-dw,h/2-dh), (w/2+dw,h/2+dh), 255, -1)
-	cv.Set(f,0,mask)
-	return f
-	cv.DFT(f, f, cv.CV_DXT_INVERSE_SCALE)
-	return f
-
-
-def sum_squared(img1, img2):
-	tmp = cv.CreateImage(cv.GetSize(img1), 8,1)
-	cv.Sub(img1,img2,tmp)
-	cv.Pow(tmp,tmp,2.0)
-	return cv.Sum(tmp)[0]
-
-def ccoeff_normed(img1, img2):
-	size = cv.GetSize(img1)
-	tmp1 = float_version(img1)
-	tmp2 = float_version(img2)
-
-	cv.SubS(tmp1, cv.Avg(tmp1), tmp1)
-	cv.SubS(tmp2, cv.Avg(tmp2), tmp2)
-
-	norm1 = cv.CloneImage(tmp1)
-	norm2 = cv.CloneImage(tmp2)
-	cv.Pow(tmp1, norm1, 2.0)
-	cv.Pow(tmp2, norm2, 2.0)
-
-	#cv.Mul(tmp1, tmp2, tmp1)
-
-	return cv.DotProduct(tmp1, tmp2) /  (cv.Sum(norm1)[0]*cv.Sum(norm2)[0])**0.5
-
-
 
 #*****************
 #this is the watch-for-card bit
@@ -188,47 +133,6 @@ def setup_windows():
 	#cv.StartWindowThread()
 
 
-
-def show_scaled(win, img):
-	min, max, pt1, pt2 = cv.MinMaxLoc(img)
-	cols, rows = cv.GetSize(img)
-	tmp = cv.CreateMat(rows, cols,cv.CV_32FC1)
-	cv.Scale(img, tmp, 1.0/(max-min), 1.0*(-min)/(max-min))
-	cv.ShowImage(win,tmp)
-
-
-#**************************
-#some utilities to manage card loading/saving
-def load_sets(base_dir, set_names):
-	cards = []
-	for dir, subdirs, fnames in os.walk(base_dir):
-		set = os.path.split(dir)[1]
-		if set in set_names:
-			for fname in fnames:
-				path = os.path.join(dir, fname)
-
-				img = cv.LoadImage(path,0)
-				if cv.GetSize(img) != (223, 310):
-					tmp = cv.CreateImage((223, 310), 8, 1)
-					cv.Resize(img,tmp)
-					img = tmp
-				angle_map = gradient(img)[1]
-				hist = angle_hist(angle_map)
-
-				cards.append((
-					fname.replace('.full.jpg',''),
-					set,
-					angle_map,
-					hist
-				))
-	return cards
-
-
-def img_from_buffer(buffer):
-	np_arr = numpy.fromstring(buffer,'uint8')
-	np_mat = cv2.imdecode(np_arr,0)
-	return cv.fromarray(np_mat)
-
 #cv.EncodeImage('.PNG',img).tostring()
 def save_captures(num, captures):
 	dir = "capture_%02d" % num
@@ -256,80 +160,6 @@ def folder_to_db(num):
 	finally:
 		connection.close()
 
-def match_db_cards(known):
-	connection = sqlite3.connect("inventory.sqlite3")
-	try:
-		cursor = connection.cursor()
-		cursor.execute("select rowid, scan_png from inv_cards where recognition_status is 'scanned'")
-		row = cursor.fetchone()
-		while row is not None:
-			try:
-				id, buf = row
-				img = img_from_buffer(buf)
-				card, set = match_card(img, known)
-				card = unicode(card.decode('UTF-8'))
-				cv.ShowImage('debug', img)
-				print "set row %s to %s/%s" % (id, set, card)
-				update_c = connection.cursor()
-				update_c.execute("update inv_cards set name=?, set_name=?, recognition_status=? where rowid=?", [card, set, 'candidate_match', id])
-				connection.commit()
-			except KeyboardInterrupt as e:
-				raise e
-			except Exception as e:
-				print "failure on row %s" % row[0]
-				print e
-			finally:
-				row = cursor.fetchone()
-	finally:
-		connection.close()
-
-#*********************
-#card matching section
-def gradient(img):
-	cols, rows = cv.GetSize(img)
-
-	x_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
-	y_drv = cv.CreateMat(rows,cols,cv.CV_32FC1)
-	mag = cv.CreateMat(rows,cols,cv.CV_32FC1)
-	ang = cv.CreateMat(rows,cols,cv.CV_32FC1)
-
-	cv.Sobel(img, x_drv, 1, 0)
-	cv.Sobel(img, y_drv, 0, 1)
-	cv.CartToPolar(x_drv,y_drv,mag,ang)
-	return (mag,ang)
-
-def angle_hist(mat):
-	h = cv.CreateHist([9], cv.CV_HIST_ARRAY, [(0.001,math.pi*2)], True)
-	cv.CalcHist([cv.GetImage(mat)], h)
-	#cv.NormalizeHist(h,1.0)
-	return h
-
-def score(card, known, method):
-	r = cv.CreateMat(1, 1, cv.CV_32FC1)
-	cv.MatchTemplate(card, known, r, method)
-	return r[0,0]
-
-def match_card(card, known_set):
-	mag, grad = gradient(card)
-	#h = angle_hist(grad)
-	#limited_set = sorted([(cv.CompareHist(h, hist, cv.CV_COMP_CORREL), name, set, g) for name,set,g,hist in known_set], reverse=True)[0:1000]
-	#h_score, name, set, img = max(limited_set,
-	#	key = lambda (h_score, name, set, known): score(grad, known, cv.CV_TM_CCOEFF)
-	#)
-	name, set, g, h = max(known_set,
-		key = lambda (n, s, g, h): ccoeff_normed(g,grad)
-	)
-	return (name, set)
-
-LIKELY_SETS = [
-	'DKA', 'ISD',
-	'NPH', 'MBS', 'SOM',
-	'ROE', 'WWK', 'ZEN',
-	'ARB', 'CON', 'ALA',
-	'EVE', 'SHM', 'MOR', 'LRW',
-	'M12', 'M11', 'M10', '10E',
-	'HOP',
-]
 	
 
 '''
