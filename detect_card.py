@@ -1,20 +1,6 @@
 import cv
 import math
 
-def find_longest_contour(contour_seq):
-	x = contour_seq
-	max_len = 0
-	max = None
-	try:
-		while x is not None:
-			if cv.ArcLength(x) > max_len:
-				max_len = cv.ArcLength(x)
-				max = x
-			x = x.h_next()
-	except:
-		pass
-	return (max, max_len)
-
 
 def longest_lines(hull):
 	l = len(hull)
@@ -119,35 +105,3 @@ def detect_card(grey_image, grey_base, thresh=100):
 			return corners[top_left:] + corners[:top_left]
 
 	return None
-
-def draw_keypoints(color_img, keypoints):
-	tmp = cv.CloneImage(color_img)
-	min_size = min(size for (pt, l, size, dir, hessian) in keypoints)
-	max_size = max(size for (pt, l, size, dir, hessian) in keypoints)
-	min_length = 2
-	max_length = 10
-	ratio = (max_length - min_length) / float(max_size - min_size)
-
-	for ((x,y), lap, size, dir, hessian) in keypoints:
-		p1 = (int(x), int(y))
-		if lap==1:
-			color = (255,0,0)
-		elif lap==0:
-			color = (0,255,0)
-		elif lap==-1:
-			color = (0,0,255)
-		else:
-			color = (255, 255, 255) # shouldn't happen
-
-		length = (size - min_size) * ratio + min_length
-
-		cv.Circle(tmp, p1, 1, color)
-		a = math.pi * dir / 180.0
-		p2 = (
-			int(x + math.cos(a) * length),
-			int(y + math.sin(a) * length)
-		)
-		cv.Line(tmp, p1, p2, color)
-	return tmp
-
-

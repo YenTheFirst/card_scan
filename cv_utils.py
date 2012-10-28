@@ -19,30 +19,6 @@ def float_version(img):
 	cv.ConvertScale(img, tmp, 1/255.0)
 	return tmp
 
-def mask_for(img, pt):
-	tmp = cv.CreateImage( cv.GetSize(img), 8, 1)
-	cv.Set(tmp, 255)
-	cv.Rectangle(tmp, (0,0), pt, 0, -1)
-	return tmp
-
-def high_freq(img, pct):
-	f = float_version(img)
-	cv.DFT(f, f, cv.CV_DXT_FORWARD)
-	mask = cv.CreateImage( cv.GetSize(img), 8, 1)
-	cv.Set(mask, 0)
-	#cv.Set(mask, 255)
-	w, h = cv.GetSize(img)
-	dw = int(w*pct*0.5)
-	dh = int(h*pct*0.5)
-	#cv.Rectangle(mask, (0,0), (int(w*pct), int(h*pct)), 255, -1)
-	#cv.Rectangle(mask, (int(w*pct), int(h*pct)), (w,h), 255, -1)
-	cv.Rectangle(mask, (w/2-dw,h/2-dh), (w/2+dw,h/2+dh), 255, -1)
-	cv.Set(f,0,mask)
-	return f
-	cv.DFT(f, f, cv.CV_DXT_INVERSE_SCALE)
-	return f
-
-
 def sum_squared(img1, img2):
 	tmp = cv.CreateImage(cv.GetSize(img1), 8,1)
 	cv.Sub(img1,img2,tmp)
