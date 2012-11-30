@@ -57,7 +57,7 @@ class Query:
 						val = int(val)
 					except ValueError:
 						pass
-				return cmp(attr, val) == comparisons.index(self.requirement)
+				return cmp(attr, val) == comparisons.index(self.requirement) - 1
 			elif self.requirement == "=~":
 				return re.search(val, attr)
 			elif self.requirement == "HAS":
