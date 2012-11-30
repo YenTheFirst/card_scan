@@ -1,8 +1,16 @@
 import re
 
 def calculate_cmc(manacost):
-	#stub
-	return 0
+	components = re.findall("\([^()]+\)|\d+|[RGUWB]", manacost)
+	total = 0
+	for c in components:
+		if re.match("^\d+$", c):
+			total += int(c)
+		elif re.match("^\(2/[RGUWB]\)$", c):
+			total += 2
+		else:
+			total += 1
+	return total
 
 def maybe_to_int(string):
 	try:
