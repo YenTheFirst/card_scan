@@ -69,5 +69,8 @@ class SearchCard:
 
 		return new_card
 
+	def __repr__(self):
+		return "<%s: %s>" % (self.__class__, self.name)
+
 #load all cards with
 #cards = filter(None, (search_card.SearchCard.from_xml_node(n) for n in root.findall("./cards/card")))
