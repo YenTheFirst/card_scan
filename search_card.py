@@ -30,7 +30,7 @@ class Query:
 		elif self.requirement == "OR":
 			return any(c.matches_card(card) for c in self.children)
 		elif self.requirement == "NOT":
-			return not self.children.matches(card)
+			return not self.children.matches_card(card)
 		else:
 			#it's attribute based. get the attribute
 			attr = getattr(card, self.field)
@@ -41,7 +41,7 @@ class Query:
 				return cmp(attr, val) == comparisons.index(self.requirement)
 			elif self.requirement == "=~":
 				return re.search(val, attr)
-			elif self.requirement == "has":
+			elif self.requirement == "HAS":
 				return val in attr
 	
 	def __repr__(self):
@@ -52,6 +52,132 @@ class Query:
 				s += ", %s = %r" % (f, v)
 		s += ")"
 		return s
+
+	FORMATS = {
+		"STANDARD": ["M13", "RTR", "DKA", "AVR", "ISD"]
+	}
+	@classmethod
+	def parse(cls, text):
+		#turn text into a nice array of token-things
+		tokens = re.findall(r"""
+			#single quote strings
+			'(?:\\'|[^'])*' |
+			#double quote strings
+			"(?:\\"|[^"])*" |
+			#raw words
+			\w+ |
+			#parens
+			[()] |
+			#not
+			! |
+			#or comparison things
+			[=<>~]+
+		""", text, re.X)
+
+		#nest on parentheses
+		open_index = []
+		def next_paren(tokens, start=0):
+			indexes=[]
+			for c in ['(',')']:
+				try:
+					indexes.append(tokens.index(c,start))
+				except ValueError:
+					indexes.append(len(tokens))
+			return min(indexes)
+
+		i = next_paren(tokens)
+		while i < len(tokens):
+			t = tokens[i]
+			if t == '(':
+				#open a paren on this i
+				open_index.append(i)
+			elif t == ')':
+				#close. fold up between this i and our last open index
+				open_i = open_index.pop()
+				tokens[open_i:i+1] = [tokens[open_i+1:i]]
+				i = open_i
+			i = next_paren(tokens, i+1)
+
+		if len(open_index) > 0:
+			raise Exception("extra open paren at %d" % open_index[-1])
+
+		def query_from_tokens(tokens):
+			#first, bind all top-level logic.
+			#NOT binds most closely, followed by AND and OR
+			for logic in ["OR", "AND"]:
+				top_logic = [i for i,t in enumerate(tokens) if str(t).upper() == logic]
+
+				if len(top_logic) > 0:
+					start = [0]+[t+1 for t in top_logic]
+					end = top_logic+[len(tokens)]
+					children = [query_from_tokens(tokens[s:e]) for s,e in zip(start, end)]
+					return cls(requirement=logic, children = children)
+			#check for NOT
+			if str(tokens[0]).upper() in ["NOT", "!"]:
+				child = query_from_tokens(tokens[1:])
+				return cls(requirement="NOT", children = child)
+
+			#if we're a bare nested statement, return us
+			if len(tokens) == 1 and isinstance(tokens[0], list):
+				return query_from_tokens(tokens[0])
+
+			#otherwise, we should be 3 or more fields, with format:
+			#<attr> <op> <values>
+			if len(tokens) < 3:
+				raise Exception("invalid expression: %s" % tokens)
+			#attr should be a word
+			attr = tokens[0]
+			if not re.match(r'^\w+$',attr):
+				raise Exception("invalid attribute: %s" % attr)
+
+			#figure out the op
+			negate = False
+			while tokens[1].upper() in ["!", "NOT"]:
+				negate = not negate
+				#! could be short for 'is not', or we could have 'not has', etc.
+				#if we have 4 or more tokens, delete this one
+				if len(tokens) > 3:
+					del tokens[1]
+			op = tokens[1].upper()
+			#do >= <= as negations
+			if op == '>=':
+				op = '<'
+				negate = not negate
+			if op == '<=':
+				op = '>'
+				negate = not negate
+			if op == 'IS':
+				op = '='
+				if tokens[2].upper() == "NOT":
+					del tokens[2]
+					negate = not negate
+
+			#if any of our values (tokens 2+) are enclosed in quotes, de-enclose them
+			for i, t in enumerate(tokens[2:]):
+				for quote in ["'",'"']:
+					pattern = "^%s.*%s$" % (quote,quote)
+					if re.match(pattern, t):
+						tokens[i+2] = t.replace("\\%s" % quote, quote)[1:-1]
+
+			#handle format as asking for if the set is in any of the format sets
+			if attr.upper() == "FORMAT":
+				sets = cls.FORMATS[tokens[2].upper()]
+				set_queries = [cls(requirement="HAS", field="sets", value=s) for s in sets]
+				full_q = cls(requirement="OR", children=set_queries)
+				#maybe we're negating this specifically
+			else:
+				print tokens
+				full_q = cls(requirement=op, field=attr, value=tokens[2])
+			if negate:
+				full_q = cls(requirement="NOT", children = full_q)
+			return full_q
+
+			#else, we're just a simple match
+			return cls(requirement=op, field=attr, value=tokens[2])
+	
+		return query_from_tokens(tokens)
+
+
 
 class SearchCard:
 	@classmethod
