@@ -16,6 +16,43 @@ def default_empty(val):
 	else:
 		return val
 
+class Query:
+	def __init__(self, requirement,
+			children=None, field=None, value=None):
+		self.requirement = requirement
+		self.children = children
+		self.field = field
+		self.value = value
+	
+	def matches_card(self,card):
+		if self.requirement == "AND":
+			return all(c.matches_card(card) for c in self.children)
+		elif self.requirement == "OR":
+			return any(c.matches_card(card) for c in self.children)
+		elif self.requirement == "NOT":
+			return not self.children.matches(card)
+		else:
+			#it's attribute based. get the attribute
+			attr = getattr(card, self.field)
+			val = self.value
+
+			comparisons = ["<", "=", ">"]
+			if self.requirement in comparisons:
+				return cmp(attr, val) == comparisons.index(self.requirement)
+			elif self.requirement == "=~":
+				return re.search(val, attr)
+			elif self.requirement == "has":
+				return val in attr
+	
+	def __repr__(self):
+		s = "%s(requirement = %r" % (self.__class__, self.requirement)
+		for f in ["children", "field", "value"]:
+			v = getattr(self, f)
+			if v:
+				s += ", %s = %r" % (f, v)
+		s += ")"
+		return s
+
 class SearchCard:
 	@classmethod
 	def from_xml_node(cls, node):
@@ -71,6 +108,12 @@ class SearchCard:
 
 	def __repr__(self):
 		return "<%s: %s>" % (self.__class__, self.name)
+
+
+
+
+
+
 
 #load all cards with
 #cards = filter(None, (search_card.SearchCard.from_xml_node(n) for n in root.findall("./cards/card")))
