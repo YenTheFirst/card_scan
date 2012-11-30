@@ -33,7 +33,11 @@ class Query:
 			return not self.children.matches_card(card)
 		else:
 			#it's attribute based. get the attribute
-			attr = getattr(card, self.field)
+			try:
+				attr = getattr(card, self.field)
+			except AttributeError:
+				#if we don't have the field, we can't be anything in comparison to it
+				return False
 			field_type = card.get_field_type(self.field)
 			val = self.value
 
