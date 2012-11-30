@@ -34,10 +34,17 @@ class Query:
 		else:
 			#it's attribute based. get the attribute
 			attr = getattr(card, self.field)
+			field_type = card.get_field_type(self.field)
 			val = self.value
 
 			comparisons = ["<", "=", ">"]
 			if self.requirement in comparisons:
+				#if it's a numerical field, attempt a numerical conversion
+				if field_type == "num":
+					try:
+						val = int(val)
+					except ValueError:
+						pass
 				return cmp(attr, val) == comparisons.index(self.requirement)
 			elif self.requirement == "=~":
 				return re.search(val, attr)
@@ -180,6 +187,21 @@ class Query:
 
 
 class SearchCard:
+	FIELD_TYPES = {
+		"name": "str",
+		"sets": "set",
+		"colors": "set",
+		"manacost": "str",
+		"cmc": "num",
+		"types": "set",
+		"power": "num",
+		"toughness": "num",
+		"loyalty": "num",
+		"text": "str"
+	}
+	def get_field_type(self, field):
+		return self.__class__.FIELD_TYPES[field]
+
 	@classmethod
 	def from_xml_node(cls, node):
 		#this is for debug
