@@ -9,8 +9,11 @@ import re
 from datetime import datetime
 from operator import attrgetter
 import urllib2
+import xml.etree.ElementTree as ET
+
 
 from models import InvCard, FixLog, InvLog
+from search_card import SearchCard, Query
 from elixir import session, setup_all, metadata
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import func
@@ -19,6 +22,13 @@ setup_all()
 app = Flask(__name__)
 
 BASIC_LANDS = ["Plains", "Island", "Swamp", "Mountain", "Forest"]
+
+#on application startup, load card descriptions
+tree = ET.parse("/home/talin/Cockatrice/cards/cards.xml")
+root = tree.getroot()
+all_cards = filter(None,
+		(SearchCard.from_xml_node(n)
+		for n in root.findall("./cards/card")))
 
 @app.route('/db_image/<int:img_id>')
 def db_image(img_id):
