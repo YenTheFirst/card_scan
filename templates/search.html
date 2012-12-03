@@ -20,7 +20,7 @@
 			{% for card in cards %}
 			<tr>
 				<td>{{card.name}}</td>
-				<td>{{card.inventory_card_query().all()|count}}</td>
+				<td>{{card.num_in_inventory}}</td>
 				<td>{{card.text}}</td>
 			</tr>
 			{% endfor %}

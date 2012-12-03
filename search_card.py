@@ -210,13 +210,18 @@ class SearchCard:
 		"power": "num",
 		"toughness": "num",
 		"loyalty": "num",
-		"text": "str"
+		"text": "str",
+		"num_in_inventory": "num"
 	}
 	def get_field_type(self, field):
 		return self.__class__.FIELD_TYPES[field]
 
 	def inventory_card_query(self):
 		return InvCard.query.filter_by(name=self.name)
+
+	@property
+	def num_in_inventory(self):
+		return self.inventory_card_query().count()
 
 	@classmethod
 	def from_xml_node(cls, node):
