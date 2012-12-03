@@ -1,4 +1,5 @@
 import re
+from models import InvCard
 
 def calculate_cmc(manacost):
 	components = re.findall("\([^()]+\)|\d+|[RGUWB]", manacost)
@@ -213,6 +214,9 @@ class SearchCard:
 	}
 	def get_field_type(self, field):
 		return self.__class__.FIELD_TYPES[field]
+
+	def inventory_card_query(self):
+		return InvCard.query.filter_by(name=self.name)
 
 	@classmethod
 	def from_xml_node(cls, node):
