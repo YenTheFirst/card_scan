@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+	<head>
+		<style type='text/css'>
+			td { vertical-align: bottom; }
+		</style>
+
+	</head>
+	<body>
+		<form action="search" method="get">
+			<textarea name='q' cols=30 rows=7>{{query_text or ""}}</textarea>
+			<input type='submit' text="Search">
+		</form>
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>Num in Inventory</th>
+				<th>Text</th>
+			</tr>
+			{% for card in cards %}
+			<tr>
+				<td>{{card.name}}</td>
+				<td>{{card.inventory_card_query().all()|count}}</td>
+				<td>{{card.text}}</td>
+			</tr>
+			{% endfor %}
+		</table>
+
+	</body>
+</html>
+			
+				

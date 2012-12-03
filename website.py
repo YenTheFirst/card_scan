@@ -52,35 +52,17 @@ def known_image(set_abbrev,name):
 
 @app.route('/search')
 def search():
-	page_size = 10;
-	connection = sqlite3.connect('inventory.sqlite3')
-	cursor = connection.cursor()
-	cols = ['rowid', 'name', 'set_name', 'box', 'box_index', 'recognition_status']
-	where_clause = ""
-	where_params = []
-	for key in cols:
-		val = request.args.get(key)
-		if val is not None:
-			if len(where_params) == 0:
-				where_clause = " where "
-			else:
-				where_clause += " and "
-			where_clause += (key + " = ?")
-			where_params.append(val)
-	query = "select %s from inv_cards" % ", ".join(cols)
-	query += where_clause
-	
-	page_num = 0
-	val = request.args.get("page")
-	if val is not None: 
-		page_num = int(val)-1
-	query += " limit ? offset ?";
+	global all_cards
 
-	print query
-	print page_num * page_size
-	cursor.execute(query, where_params+[page_size, page_num*page_size])
-	results = [dict(zip(cols,r)) for r in cursor.fetchall()]
-	return render_template('results.html', cards=results)
+	query_text = request.args.get("q")
+	if query_text is not None:
+		query = Query.parse(query_text)
+		cards = filter(query.matches_card, all_cards)
+		cards = sorted(cards, key=lambda c: c.name)
+	else:
+		cards = []
+
+	return render_template('search.html', cards=cards, query_text=query_text)
 
 @app.route('/verify_scans', methods=['POST', 'GET'])
 def verify_scans():
