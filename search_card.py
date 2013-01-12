@@ -73,9 +73,6 @@ class Query:
 		s += ")"
 		return s
 
-	FORMATS = {
-		"STANDARD": ["M13", "RTR", "DKA", "AVR", "ISD"]
-	}
 	@classmethod
 	def parse(cls, text):
 		#turn text into a nice array of token-things
@@ -179,15 +176,8 @@ class Query:
 					if re.match(pattern, t):
 						tokens[i+2] = t.replace("\\%s" % quote, quote)[1:-1]
 
-			#handle format as asking for if the set is in any of the format sets
-			if attr.upper() == "FORMAT":
-				sets = cls.FORMATS[tokens[2].upper()]
-				set_queries = [cls(requirement="HAS", field="sets", value=s) for s in sets]
-				full_q = cls(requirement="OR", children=set_queries)
-				#maybe we're negating this specifically
-			else:
-				print tokens
-				full_q = cls(requirement=op, field=attr, value=tokens[2])
+			print tokens
+			full_q = cls(requirement=op, field=attr, value=tokens[2])
 			if negate:
 				full_q = cls(requirement="NOT", children = full_q)
 			return full_q
@@ -203,6 +193,7 @@ class SearchCard:
 	FIELD_TYPES = {
 		"name": "str",
 		"sets": "set",
+		"formats": "set",
 		"colors": "set",
 		"manacost": "str",
 		"cmc": "num",
@@ -213,6 +204,10 @@ class SearchCard:
 		"text": "str",
 		"num_in_inventory": "num"
 	}
+	FORMATS = {
+		"STANDARD": set(["M13", "RTR", "DKA", "AVR", "ISD"])
+	}
+
 	def get_field_type(self, field):
 		return self.__class__.FIELD_TYPES[field]
 
@@ -254,6 +249,11 @@ class SearchCard:
 		if set(new_card.sets).intersection(set(["UNH","UG"])): #don't even try for these
 			del new_card
 			return None
+
+		#set the formats
+		new_card.formats = [format for format, sets
+			in cls.FORMATS.iteritems()
+			if sets.intersection(new_card.sets)]
 
 		set_attribute("colors", "color", required = False, multiple = True)
 		set_attribute("manacost")
