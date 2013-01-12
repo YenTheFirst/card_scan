@@ -30,6 +30,10 @@ all_cards = filter(None,
 		(SearchCard.from_xml_node(n)
 		for n in root.findall("./cards/card")))
 
+@app.route('/')
+def index():
+	return render_template('index.html')
+
 @app.route('/db_image/<int:img_id>')
 def db_image(img_id):
 	try:
