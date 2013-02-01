@@ -9,8 +9,11 @@ import re
 from datetime import datetime
 from operator import attrgetter
 import urllib2
+import xml.etree.ElementTree as ET
+
 
 from models import InvCard, FixLog, InvLog
+from search_card import SearchCard, Query
 from elixir import session, setup_all, metadata
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import func
@@ -19,6 +22,17 @@ setup_all()
 app = Flask(__name__)
 
 BASIC_LANDS = ["Plains", "Island", "Swamp", "Mountain", "Forest"]
+
+#on application startup, load card descriptions
+tree = ET.parse("/home/talin/Cockatrice/cards/cards.xml")
+root = tree.getroot()
+all_cards = filter(None,
+		(SearchCard.from_xml_node(n)
+		for n in root.findall("./cards/card")))
+
+@app.route('/')
+def index():
+	return render_template('index.html')
 
 @app.route('/db_image/<int:img_id>')
 def db_image(img_id):
@@ -42,35 +56,17 @@ def known_image(set_abbrev,name):
 
 @app.route('/search')
 def search():
-	page_size = 10;
-	connection = sqlite3.connect('inventory.sqlite3')
-	cursor = connection.cursor()
-	cols = ['rowid', 'name', 'set_name', 'box', 'box_index', 'recognition_status']
-	where_clause = ""
-	where_params = []
-	for key in cols:
-		val = request.args.get(key)
-		if val is not None:
-			if len(where_params) == 0:
-				where_clause = " where "
-			else:
-				where_clause += " and "
-			where_clause += (key + " = ?")
-			where_params.append(val)
-	query = "select %s from inv_cards" % ", ".join(cols)
-	query += where_clause
-	
-	page_num = 0
-	val = request.args.get("page")
-	if val is not None: 
-		page_num = int(val)-1
-	query += " limit ? offset ?";
+	global all_cards
 
-	print query
-	print page_num * page_size
-	cursor.execute(query, where_params+[page_size, page_num*page_size])
-	results = [dict(zip(cols,r)) for r in cursor.fetchall()]
-	return render_template('results.html', cards=results)
+	query_text = request.args.get("q")
+	if query_text is not None:
+		query = Query.parse(query_text)
+		cards = filter(query.matches_card, all_cards)
+		cards = sorted(cards, key=lambda c: c.name)
+	else:
+		cards = []
+
+	return render_template('search.html', cards=cards, query_text=query_text)
 
 @app.route('/verify_scans', methods=['POST', 'GET'])
 def verify_scans():

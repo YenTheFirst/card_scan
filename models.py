@@ -5,7 +5,7 @@ from elixir import ManyToOne, OneToMany, OneToOne
 metadata.bind = "sqlite:///inventory.sqlite3"
 
 class InvCard(Entity):
-	name = Field(UnicodeText)
+	name = Field(UnicodeText, index=True)
 	set_name = Field(UnicodeText)
 	box = Field(UnicodeText)
 	scan_png = Field(BLOB)

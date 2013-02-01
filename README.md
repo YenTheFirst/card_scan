@@ -35,7 +35,7 @@ This is a set of utilities to recognize and extract card images from a video fee
   1. open a python shell
   1. `import cv`
   1. `import scan_card`
-  1. create the opencv capture device with `cv.CreateCameraCapturei(<num>)`. On linux, if your camera is /dev/video0, you'll run `cam = cv.CreateCameraCapture(0)`, for example.
+  1. create the opencv capture device with `cv.CreateCameraCapture(<num>)`. On linux, if your camera is /dev/video0, you'll run `cam = cv.CreateCameraCapture(0)`, for example.
   1. create the output windows with `scan_card.setup_windows()`
     * they won't show up until the capture loop starts running.
   1. run `captures = scan_card.watch_for_card(<capture device>)`
