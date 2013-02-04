@@ -175,15 +175,18 @@ def match_card(card, known_set, cache):
 	candidate_scores = sorted(candidate_scores,
 			key = lambda (n,s,d,hr,ccoeff): ccoeff,
 			reverse = True)
+	norm_factor = 0 - candidate_scores[-1][4]
+	total_score = sum([ccoeff + norm_factor for n,s,d,hr,ccoeff in candidate_scores])
 
 	#for each score, compute the normaized features (- mean, / std_median)
+	#for correlation, we want the share of normalized score
 	features = [
 		(
 			name, set_name,
 			(corr_rank - 9.5) / 5.766,
 			(h_rank - 6.759942) / 4.522550,
 			(dist - 17.374153) / 3.014411,
-			(corr - 0.050000) / 0.040183,
+			(((corr + norm_factor) / total_score)- 0.050000) / 0.040183,
 		) for corr_rank, (name, set_name, dist, h_rank, corr)
 		in enumerate(candidate_scores)
 	]
