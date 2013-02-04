@@ -1,6 +1,66 @@
 import os
 import sqlite3
 from cv_utils import ccoeff_normed, img_from_buffer
+import cv
+
+PREV, NEXT, KEY, RESULT = 0, 1, 2, 3
+MAXSIZE = 3000
+class GradientCache:
+	def __init__(self, base_dir):
+		self.base_dir = base_dir
+		self.cache = {}
+		self.root = []
+		self.root[:] = [self.root, self.root, None, None]
+		self.full = False
+		self.currsize = 0
+
+
+	def getCard(self, set_name, name):
+		key = "%s/%s" % (set_name, name)
+		if key in self.cache:
+			#print 'hit', key
+			#bump entry to front of list, then return
+			link = self.cache[key]
+			#remove it from where it is
+			link_prev, link_next, key, result = link
+			link_prev[NEXT] = link_next
+			link_next[PREV] = link_prev
+			#put in right before root
+			last = self.root[PREV]
+			last[NEXT] = self.root[PREV] = link
+			link[PREV] = last
+			link[NEXT] = self.root
+			return result
+
+		#load the image
+		path = os.path.join(self.base_dir, set_name, name+".full.jpg")
+		img = cv.LoadImage(path.encode('utf-8'),0)
+		if cv.GetSize(img) != (223, 310):
+			tmp = cv.CreateImage((223, 310), 8, 1)
+			cv.Resize(img,tmp)
+			img = tmp
+		result = gradient(img)[1]
+
+		#print 'miss' , key, self.full
+		if self.full:
+			#add as the new root
+			self.root[KEY] = key
+			self.root[RESULT] = result
+			self.cache[key] = self.root
+
+			#make the oldelst link the new root
+			self.root = self.root[NEXT]
+			del self.cache[self.root[KEY]]
+			self.root[KEY] = self.root[RESULT] = None
+		else:
+			# put result in a new link at the front of the queue
+			last = self.root[PREV]
+			link = [last, self.root, key, result]
+			self.cache[key] = last[NEXT] = self.root[PREV] = link
+			self.currsize += 1
+			self.full = (self.currsize == MAXSIZE)
+
+		return result
 
 
 def load_sets(base_dir, set_names):
