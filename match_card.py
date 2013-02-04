@@ -5,7 +5,7 @@ import cv
 import math
 
 PREV, NEXT, KEY, RESULT = 0, 1, 2, 3
-MAXSIZE = 3000
+MAXSIZE = 7000
 class GradientCache:
 	def __init__(self, base_dir):
 		self.base_dir = base_dir
@@ -14,7 +14,6 @@ class GradientCache:
 		self.root[:] = [self.root, self.root, None, None]
 		self.full = False
 		self.currsize = 0
-
 
 	def getCard(self, set_name, name):
 		key = "%s/%s" % (set_name, name)
