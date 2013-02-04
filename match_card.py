@@ -140,18 +140,91 @@ def score(card, known, method):
 	cv.MatchTemplate(card, known, r, method)
 	return r[0,0]
 
-def match_card(card, known_set):
+def match_card(card, known_set, cache):
 	mag, grad = gradient(card)
-	#h = angle_hist(grad)
-	#limited_set = sorted([(cv.CompareHist(h, hist, cv.CV_COMP_CORREL), name, set, g) for name,set,g,hist in known_set], reverse=True)[0:1000]
-	#h_score, name, set, img = max(limited_set,
-	#	key = lambda (h_score, name, set, known): score(grad, known, cv.CV_TM_CCOEFF)
-	#)
 	phash = dct_hash(card)
-	name, set, phash2 = min(known_set,
-		key = lambda (n, s, h): hamming_dist(h, phash)
-	)
-	return (name, set)
+
+	#fetch the twenty candidates with the lowest hamming distance on the phash
+	#there's a 99% chance that the matching card is one of the first 20
+	candidate_matches = sorted([
+		(name, set_name, hamming_dist(h, phash))
+		for name, set_name, h in known_set
+	], key = lambda (n,s,dist): dist)
+	#we want the first 20
+	candidate_matches = candidate_matches[:20]
+
+	#calculate the correlation score,
+	#and also find the 'place' of each phash score
+	#(multiple candidates can tie a phash score, so we rank by count of 
+	#distances < our distance)
+	candidate_scores= [
+		(
+			name, set_name,
+			dist, len([d for _,_,d in candidate_matches if d < dist]),
+			ccoeff_normed(grad, cache.getCard(set_name, name))
+		) for name,set_name,dist in candidate_matches
+	]
+
+	#sort by score, and add a rank
+	candidate_scores = sorted(candidate_scores,
+			key = lambda (n,s,d,hr,ccoeff): ccoeff,
+			reverse = True)
+
+	#for each score, compute the normaized features (- mean, / std_median)
+	features = [
+		(
+			name, set_name,
+			(corr_rank - 9.5) / 5.766,
+			(h_rank - 6.759942) / 4.522550,
+			(dist - 17.374153) / 3.014411,
+			(corr - 0.050000) / 0.040183,
+		) for corr_rank, (name, set_name, dist, h_rank, corr)
+		in enumerate(candidate_scores)
+	]
+
+	#compute the score (based on fancy machine learning.)
+	#todo: make more automatic and configurable
+	scores = [
+		(
+			name, set_name,
+			1.0 / (1 + math.e ** -(-6.48728 + 0.53659 * cr + -0.11304 * hr + -3.06121 * d + 2.94122 * corr))
+		) for name, set_name, cr, hr, d, corr in features
+	]
+
+	#consider the scores in order
+	scores = sorted(scores, key=lambda (n,s,score): score, reverse=True)
+	#print scores
+	#raw_input()
+
+	#each score is a probability 0.0-1.0 of how likely it is that
+	#that name, set_name is the correct card. we'll consider <= 0.50 a no
+	# >= 0.60 a yes, and 0.5..0.6 a maybe (todo: adjust?)
+
+	yes_cards = [(n, s) for n, s, score in scores if score >= 0.6]
+	maybe_cards = [(n, s) for n, s, score in scores if 0.6 > score > 0.5]
+
+	#if we have one or more 'yes' cards
+	if len(yes_cards) > 0:
+		#if they're all the same card...
+		if len(set([n for n,s in yes_cards])) == 1:
+			#then we're sure it's that card (unsure on set, but it's the same art, so hard to tell
+			return (yes_cards[0], True)
+		#print "got multiple yes: ", yes_cards
+		#raw_input()
+	elif len(maybe_cards) > 0:
+		#we have no 'yes' cards at all. if we have any maybe cards...
+		#if they're all the same card
+		if len(set([n for n,s in maybe_cards])) == 1:
+			#it *could* be this card, but we're not confidant
+			return (maybe_cards[0], False)
+		#print "got maybe cards: ", maybe_cards
+		#raw_input()
+
+	#print "got all 'no' cards", scores
+	#raw_input()
+	#we can't really say what it is with any sort of confidence
+	#but it's often our highest scorer, so return that.
+	return (scores[0][0:2],False)
 
 
 def dct_hash(img):
