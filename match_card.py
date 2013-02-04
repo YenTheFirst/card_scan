@@ -1,7 +1,8 @@
 import os
 import sqlite3
-from cv_utils import ccoeff_normed, img_from_buffer
+from cv_utils import ccoeff_normed, img_from_buffer, float_version
 import cv
+import math
 
 PREV, NEXT, KEY, RESULT = 0, 1, 2, 3
 MAXSIZE = 3000
