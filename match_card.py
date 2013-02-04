@@ -232,8 +232,7 @@ def match_card(card, known_set, cache):
 	#print "got all 'no' cards", scores
 	#raw_input()
 	#we can't really say what it is with any sort of confidence
-	#but it's often our highest scorer, so return that.
-	return (scores[0][0:2],False)
+	return (('',''),False)
 
 
 def dct_hash(img):
