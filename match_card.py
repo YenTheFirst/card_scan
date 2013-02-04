@@ -72,7 +72,7 @@ def load_sets(base_dir, set_names):
 			for fname in fnames:
 				path = os.path.join(dir, fname)
 
-				img = cv.LoadImage(path,0)
+				img = cv.LoadImage(path.encode('utf-8'),0)
 				if cv.GetSize(img) != (223, 310):
 					tmp = cv.CreateImage((223, 310), 8, 1)
 					cv.Resize(img,tmp)
