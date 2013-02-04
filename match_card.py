@@ -18,7 +18,6 @@ class GradientCache:
 	def getCard(self, set_name, name):
 		key = "%s/%s" % (set_name, name)
 		if key in self.cache:
-			#print 'hit', key
 			#bump entry to front of list, then return
 			link = self.cache[key]
 			#remove it from where it is
@@ -41,7 +40,6 @@ class GradientCache:
 			img = tmp
 		result = gradient(img)[1]
 
-		#print 'miss' , key, self.full
 		if self.full:
 			#add as the new root
 			self.root[KEY] = key
@@ -202,8 +200,6 @@ def match_card(card, known_set, cache):
 
 	#consider the scores in order
 	scores = sorted(scores, key=lambda (n,s,score): score, reverse=True)
-	#print scores
-	#raw_input()
 
 	#each score is a probability 0.0-1.0 of how likely it is that
 	#that name, set_name is the correct card. we'll consider <= 0.50 a no
@@ -218,19 +214,13 @@ def match_card(card, known_set, cache):
 		if len(set([n for n,s in yes_cards])) == 1:
 			#then we're sure it's that card (unsure on set, but it's the same art, so hard to tell
 			return (yes_cards[0], True)
-		#print "got multiple yes: ", yes_cards
-		#raw_input()
 	elif len(maybe_cards) > 0:
 		#we have no 'yes' cards at all. if we have any maybe cards...
 		#if they're all the same card
 		if len(set([n for n,s in maybe_cards])) == 1:
 			#it *could* be this card, but we're not confidant
 			return (maybe_cards[0], False)
-		#print "got maybe cards: ", maybe_cards
-		#raw_input()
 
-	#print "got all 'no' cards", scores
-	#raw_input()
 	#we can't really say what it is with any sort of confidence
 	return (('',''),False)
 
