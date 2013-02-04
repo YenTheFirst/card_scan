@@ -87,7 +87,7 @@ def load_sets(base_dir, set_names):
 
 	return cards
 
-def match_db_cards(known):
+def match_db_cards(known, cache):
 	connection = sqlite3.connect("inventory.sqlite3")
 	try:
 		cursor = connection.cursor()
@@ -97,12 +97,19 @@ def match_db_cards(known):
 			try:
 				id, buf = row
 				img = img_from_buffer(buf)
-				card, set = match_card(img, known)
+				(card, set_name), is_sure = match_card(img, known, cache)
 				card = unicode(card.decode('UTF-8'))
 				cv.ShowImage('debug', img)
-				print "set row %s to %s/%s" % (id, set, card)
+				if is_sure:
+					recognition_status = 'verified'
+					#we're sure, just mark it as done
+				else:
+					recognition_status = 'candidate_match'
+					#we could be wrong
+
+				print "set row %s to %s/%s (%s)" % (id, set_name, card, recognition_status)
 				update_c = connection.cursor()
-				update_c.execute("update inv_cards set name=?, set_name=?, recognition_status=? where rowid=?", [card, set, 'candidate_match', id])
+				update_c.execute("update inv_cards set name=?, set_name=?, recognition_status=? where rowid=?", [card, set, 'recognition_status', id])
 				connection.commit()
 			except KeyboardInterrupt as e:
 				raise e
