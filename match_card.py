@@ -106,7 +106,7 @@ def match_db_cards(known, cache):
 
 				print "set row %s to %s/%s (%s)" % (id, set_name, card, recognition_status)
 				update_c = connection.cursor()
-				update_c.execute("update inv_cards set name=?, set_name=?, recognition_status=? where rowid=?", [card, set, 'recognition_status', id])
+				update_c.execute("update inv_cards set name=?, set_name=?, recognition_status=? where rowid=?", [card, set_name, recognition_status, id])
 				connection.commit()
 			except KeyboardInterrupt as e:
 				raise e
