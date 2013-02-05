@@ -160,8 +160,6 @@ def folder_to_db(num):
 	finally:
 		connection.close()
 
-	
-
 '''
 import cv
 import scan_card
