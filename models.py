@@ -23,8 +23,11 @@ class InvCard(Entity):
 	def most_recent_log(self):
 		return sorted(self.inv_logs, key = lambda x: x.date)[-1]
 
-	def __repr__(self):
+	def __unicode__(self):
 		return "<%s/%s (%s/%s)>" % (self.set_name, self.name, self.box, self.box_index)
+	
+	def __str__(self):
+		return unicode(self).encode(sys.stdout.encoding)
 
 class InvLog(Entity):
 	card = ManyToOne('InvCard')
