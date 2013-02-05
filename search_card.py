@@ -265,7 +265,7 @@ class SearchCard:
 		if "Creature" in new_card.types:
 			#power or toughness can be an integer, '*', or {fraction}
 			#well, the last one's only for Little Girl ;)
-			p_t = re.findall('\d+|\*',"*/*")
+			p_t = node.find('pt').text.split('/')
 			new_card.power, new_card.toughness = map(maybe_to_int, p_t)
 
 		if "Planeswalker" in new_card.types:
