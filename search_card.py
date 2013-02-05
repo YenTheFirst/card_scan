@@ -205,7 +205,7 @@ class SearchCard:
 		"num_in_inventory": "num"
 	}
 	FORMATS = {
-		"STANDARD": set(["M13", "RTR", "DKA", "AVR", "ISD"])
+		"STANDARD": set(["M13", "GTC", "RTR", "DKA", "AVR", "ISD"])
 	}
 
 	def get_field_type(self, field):
