@@ -15,12 +15,16 @@
 			<tr>
 				<th>Name</th>
 				<th>Num in Inventory</th>
+				<th>Mana Cost</th>
+				<th> P / T </th>
 				<th>Text</th>
 			</tr>
 			{% for card in cards %}
 			<tr>
 				<td>{{card.name}}</td>
 				<td>{{card.num_in_inventory}}</td>
+				<td>{{card.manacost}}</td>
+				<td>{{card.power}}{{' / ' if card.power}}{{card.toughness}}</td>
 				<td>{{card.text}}</td>
 			</tr>
 			{% endfor %}
@@ -28,5 +32,3 @@
 
 	</body>
 </html>
-			
-				
