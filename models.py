@@ -11,7 +11,7 @@ class InvCard(Entity):
 	scan_png = Field(BLOB)
 	box_index = Field(Integer)
 	recognition_status = Field(Enum('scanned','candidate_match','incorrect_match','verified'))
-	inventory_status = Field(Enum('present', 'temporarily_out', 'permanently_gone'))
+	inventory_status = Field(Enum('present', 'temporarily_out', 'permanently_gone'), index=True)
 
 	inv_logs = OneToMany('InvLog')
 	fix_log = OneToOne('FixLog')
