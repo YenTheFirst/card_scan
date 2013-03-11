@@ -164,7 +164,7 @@ def reinsert_cards():
 		#it will be a list of ((date, reason), (cardlist)) tuples
 		cards = InvCard.query.filter_by(inventory_status = "temporarily_out")
 		the_key = lambda c: (c.most_recent_log().date, c.most_recent_log().reason)
-		outstanding_cards = groupby(sorted(cards,the_key),the_key)
+		outstanding_cards = groupby(sorted(cards,key=the_key),the_key)
 		outstanding_cards = [(key, sorted(val, key=attrgetter('name'))) for key, val in outstanding_cards]
 		return render_template("outstanding_cards.html",outstanding_cards=outstanding_cards)
 		
