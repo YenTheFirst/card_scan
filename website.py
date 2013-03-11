@@ -58,11 +58,20 @@ def known_image(set_abbrev,name):
 def search():
 	global all_cards
 
+	def order(card):
+		colors = set(re.findall(r'[WUBRG]', card.manacost))
+		colors = sorted(['WUBRG'.index(c) for c in colors])
+		length_order = len(set(colors))
+		#colorless cards should be sorted after all colored cards
+		if length_order == 0:
+			length_order = 999
+		return (length_order, colors, card.name)
+
 	query_text = request.args.get("q")
 	if query_text is not None:
 		query = Query.parse(query_text)
 		cards = filter(query.matches_card, all_cards)
-		cards = sorted(cards, key=lambda c: c.name)
+		cards = sorted(cards, key=order)
 	else:
 		cards = []
 
