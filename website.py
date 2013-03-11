@@ -145,8 +145,8 @@ def reinsert_cards():
 		fill_orders = sorted(fill_orders, key=lambda (box,count): int(box))
 
 		for box, count in fill_orders:
-			max_index = session.query(func.max(InvCard.box_index)).filter_by(box='1').one()[0]
-			for card in cards[i:count]:
+			max_index = session.query(func.max(InvCard.box_index)).filter_by(box=box).one()[0]
+			for card in cards[i:count+i]:
 				max_index += 1
 				card.box = box
 				card.box_index = max_index
