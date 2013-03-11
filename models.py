@@ -1,5 +1,5 @@
 from elixir import metadata, Entity, Field, using_options
-from elixir import Integer, UnicodeText, BLOB, Enum, DateTime
+from elixir import Integer, UnicodeText, BLOB, Enum, DateTime, Boolean
 from elixir import ManyToOne, OneToMany, OneToOne
 
 metadata.bind = "sqlite:///inventory.sqlite3"
@@ -12,6 +12,9 @@ class InvCard(Entity):
 	box_index = Field(Integer)
 	recognition_status = Field(Enum('scanned','candidate_match','incorrect_match','verified'))
 	inventory_status = Field(Enum('present', 'temporarily_out', 'permanently_gone'), index=True)
+	is_foil = Field(Boolean, default=False)
+	language = Field(UnicodeText, default=u'english')
+	condition = Field(Enum('mint','near_mint', 'good', 'heavy_play'))
 
 	inv_logs = OneToMany('InvLog')
 	fix_log = OneToOne('FixLog')
