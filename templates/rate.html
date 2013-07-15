@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+	<body>
+		<form action='rate?box={{box}}' method='post' name='cards'>
+			<table>
+				<tr>
+					<th>card</th>
+					<th>set</th>
+					<th>condition</th>
+					<th>foil</th>
+					<th>language</th>
+				</tr>
+				{% for card in cards %}
+				<tr>
+					<td>
+						[<a href="/db_image/{{card.rowid}}">img</a>]
+						<input name='{{card.rowid}}_name' type='text' value='{{card.name}}' size=26/>
+					</td>
+					<td><input name='{{card.rowid}}_set_name' type='text' value='{{card.set_name}}' size=3/></td>
+					<td>
+						{% for condition in possible_conditions %}
+						<input name='{{card.rowid}}_condition' type='radio' value='{{condition}}'
+						{%if condition == card.condition%}
+						checked='checked'
+						{%endif%} />
+						{% endfor %}
+					</td>
+					<td><input name='{{card.rowid}}_is_foil' type='checkbox' value='yes' {%if card.is_foil%} checked='checked' {%endif%}/></td>
+					<td><input name='{{card.rowid}}_language' type='text' value='{{card.language}}' size=10/></td>
+				</tr>
+				{% endfor %}
+			</table>
+
+			<input type="submit" text='Save All' />
+		</form>
+	</body>
+</html>
+
+
+

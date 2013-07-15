@@ -110,6 +110,27 @@ def verify_scans():
 	results = InvCard.query.filter_by(recognition_status='candidate_match').order_by('name').limit(50).all()
 	return render_template('verify.html', cards=results)
 
+@app.route('/rate', methods=['POST', 'GET'])
+def rate_cards():
+	box = request.args.get('box')
+	prev_box = str(int(box)-1)
+	next_box = str(int(box)+1)
+
+	if request.method == 'POST':
+		d = parse_form_args(request)
+		for rid, attribs in d.items():
+			card = InvCard.query.filter_by(rowid=rid).one()
+			card.name = attribs['name']
+			card.set_name = attribs['set_name']
+			card.condition = attribs['condition']
+			card.is_foil = ('is_foil' in attribs)
+			card.language = attribs['language']
+		session.commit()
+		return redirect('/rate?box=%s'%next_box)
+	else:
+		cards = InvCard.query.filter_by(box=box).order_by('box_index').all()
+		return render_template('rate.html', box=box, cards=cards, possible_conditions=['mint','near_mint','good','heavy_play'])
+
 #now the fun bit, where we pick boxes to reinsert into.
 #the goal is to reuse existing boxes, and minimize the number of box seeks a human has to do.
 #it would also be nice to keep existing groups of cards together.
