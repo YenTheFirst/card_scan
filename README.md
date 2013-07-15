@@ -6,7 +6,7 @@ This is a set of utilities to recognize and extract card images from a video fee
 
 **dependencies and setup:**
 
-* Python (tested and written with version 2.7)
+* Python (tested and written with version 2.7), and python developer headers
 * The primary external dependency [OpenCV](opencv.willowgarage.com), which unfortunately can't be installed through PIP at the moment.
  * I installed OpenCV and the Python bindings through Debian's package manager. Depending on your system, the install process may be different.
  * This is written and tested with OpenCV Version 2.3.1-7, per the Debian packages
