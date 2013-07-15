@@ -16,10 +16,10 @@
 						<li>
 						{% if card.inventory_status == "present" %}
 							<input type='checkbox' id='remove_{{card.rowid}}' name='remove_{{card.rowid}}'>
-							{{card.set_name}}/{{card.name}}: box {{card.box}}, {{card.box_index}}
+							{{card.set_name}}/{{card.name}} ({{card.condition}}, {{card.is_foil}}, {{card.language}}): box {{card.box}}, {{card.box_index}}
 						{% else %}
 							<input type='checkbox' disabled='disabled'>
-							{{card.set_name}}/{{card.name}}: Temporarily out.
+							{{card.set_name}}/{{card.name}} ({{card.condition}}, {{card.is_foil}}, {{card.language}}): Temporarily out.
 						{% endif %}
 						</li>
 						{% endfor %}
