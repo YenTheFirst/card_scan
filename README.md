@@ -32,31 +32,20 @@ This is a set of utilities to recognize and extract card images from a video fee
 **Scanning:**
 
   1. Set up the scanning area, with a camera attached to your computer.
-  1. open a python shell
-  1. `import cv`
-  1. `import scan_card`
-  1. create the opencv capture device with `cv.CreateCameraCapture(<num>)`. On linux, if your camera is /dev/video0, you'll run `cam = cv.CreateCameraCapture(0)`, for example.
-  1. create the output windows with `scan_card.setup_windows()`
-    * they won't show up until the capture loop starts running.
-  1. run `captures = scan_card.watch_for_card(<capture device>)`
+  1. run 'python -m utils.run_scan'
     * while capturing, there are some keystrokes available:
     * you can middle-click a picture to delete that scan
     * you can press spacebar to rescan an image without removing it. This is useful when the program hasn't detected movement when it should have, or when you're scanning multiple of the same card.
     * you can press 'r' to 'rescan' the background. This is helpful when it's not detecting motion properly. Only press this when the scan area is empty, or it will mess up detection.
-    * you can press 'escape' to exit the scan loop.
-  1. After you're done (via pressing 'escape'), you can save the captures to a folder with `scan_card.save_captures(<boxnum>, <captures>`
-  1. You can import that folder to an sqlite3 database with `scan_card.folder_to_db(<boxnum>)
-  1. You should then store the actual cards in some organizational system, such as a numbered box corresponding to the number you passed to `folder_to_db`
+    * you can press 'escape' to finish scanning a box.
 
 
 **Matching:**
 
   1. You need to have a downloaded set of images to match against. In my case, I matched the [Cockatrice](http://cockatrice.de) folder structure, which is '/setabbrev/cardname.jpg'
-  1. import the known images with `known = scan_card.load_sets(<base directory>, <list of set abbreviations>`
-    * for example, this app has LIKELY_SETS, which is a list of the sets most of my cards come from.
-  1. (optional) create a debug output window, with `cv.NamedWindow('debug')`
-  1. run the matching process with `scan_card.match_db_cards(<known>)`. Depending on the number of cards, this may take a few hours.
-  1. Afterwards, you will likely need to verify the matches.
+  1. edit utils/run_scan.py with the path to these images.
+  1. run 'python -m utils.run_match'
+  1. Afterwards, you will need to verify the scans that the system was either unsure about, or couldn't recognize.
 
 **Verification:**
 
