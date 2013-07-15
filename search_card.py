@@ -212,7 +212,7 @@ class SearchCard:
 		return self.__class__.FIELD_TYPES[field]
 
 	def inventory_card_query(self):
-		return InvCard.query.filter_by(name=self.name)
+		return InvCard.query.filter_by(name=self.name).filter(InvCard.inventory_status.op('!=')('permanently_gone'))
 
 	@property
 	def num_in_inventory(self):
