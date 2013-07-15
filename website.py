@@ -170,7 +170,7 @@ def reinsert_cards():
 		if any(card.inventory_status != "temporarily_out" for card in cards):
 			raise Exception("card is not temporarily out")
 
-		box_capacity = list(metadata.bind.execute("select box,60 - count(*) as c from inv_cards where box not null group by box having c>0 order by c desc;"))
+		box_capacity = list(metadata.bind.execute("select box,60 - count(*) as c from inv_cards where box not null and box != 'BINDER' group by box having c>0 order by c desc;"))
 		
 		#fill in each box with count cards
 		i=0
