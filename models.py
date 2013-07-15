@@ -1,6 +1,7 @@
 from elixir import metadata, Entity, Field, using_options
 from elixir import Integer, UnicodeText, BLOB, Enum, DateTime, Boolean
 from elixir import ManyToOne, OneToMany, OneToOne
+import sys
 
 metadata.bind = "sqlite:///inventory.sqlite3"
 
