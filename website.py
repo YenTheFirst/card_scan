@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, send_file, safe_join, render_template, request
+from flask import Flask, send_file, safe_join, render_template, request, redirect
 import sqlite3
 from StringIO import StringIO
 import os
@@ -256,6 +256,47 @@ def remove_cards():
 			raise e
 			#todo. error page.
 
+@app.route("/move_cards", methods=["POST"])
+def move_cards():
+	if request.method == 'POST':
+		results = []
+
+		now = datetime.now()
+		new_box = request.form.items["new_box"]
+		new_box_index = session.query(func.max(InvCard.box_index)).filter_by(box=new_box).one()[0]
+
+		try:
+
+			for key, val in request.form.items():
+				match = re.match('move_(?P<num>\d+)', key)
+				if not match: #if this isn't move_id
+					continue
+				if not val: #if the browser passed us an unchecked checkbox
+					continue
+
+				rid = int(match.group('num'))
+
+				card = InvCard.query.filter_by(rowid=rid).one()
+				if card.inventory_status != "present":
+					raise Exception("can't move non-present card")
+
+				results.append({
+					'rowid': card.rowid,
+					'set_name': card.set_name,
+					'name': card.name,
+					'box': card.box,
+					'box_index': card.box_index})
+
+				new_box_index += 1
+				card.box = new_box
+				card.box_index = new_box_index
+			results = sorted(results, key = lambda r: (r['box'],r['box_index']))
+			return render_template("results.html", cards=results)
+		except Exception as e:
+			session.rollback()
+			raise e
+			#todo. error page.
+
 
 @app.route("/fetch_decklist")
 def fetch_decklist():
@@ -296,4 +337,5 @@ def fetch_decklist():
 
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	#app.run(debug=True)
+	app.run(host='0.0.0.0', port=5000, debug=True)
