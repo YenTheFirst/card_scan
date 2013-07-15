@@ -77,15 +77,18 @@ def search():
 
 	return render_template('search.html', cards=cards, query_text=query_text)
 
-@app.route('/verify_scans', methods=['POST', 'GET'])
-def verify_scans():
-	if request.method == 'POST':
-		#split_names = [name.split('_',1) + [val] for name,val in request.form]
+def parse_form_args(request):
 		split_names = [name.split('_',1) + [val] for name,val in request.form.items()]
 		by_rid = lambda (rid,x,y): rid
 		d = {}
 		for rid, args in  groupby(sorted(split_names, key=by_rid), by_rid):
 			d[rid] = dict([a[1:] for a in list(args)])
+		return d
+
+@app.route('/verify_scans', methods=['POST', 'GET'])
+def verify_scans():
+	if request.method == 'POST':
+		d = parse_form_args(request)
 
 		for rid, attribs in d.items():
 			card = InvCard.query.filter_by(rowid=rid).one()
