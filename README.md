@@ -13,8 +13,6 @@ sudo pip install -r requirements.txt
 </pre>
 [OpenCV](opencv.willowgarage.com) 2.3.1-7
 <pre>sudo apt-get install python-opencv</pre>
-Generate sqlite3 tables
-<pre>sqlite3 inventory.db < schema.sql</pre>
 
 * MTG Set Card Images
 * webcam
