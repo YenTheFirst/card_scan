@@ -2,8 +2,9 @@ from elixir import metadata, Entity, Field, using_options
 from elixir import Integer, UnicodeText, BLOB, Enum, DateTime, Boolean
 from elixir import ManyToOne, OneToMany, OneToOne
 import sys
+import config
 
-metadata.bind = "sqlite:///inventory.sqlite3"
+metadata.bind = "sqlite:///%s" % (config.db_file)
 
 class InvCard(Entity):
 	name = Field(UnicodeText, index=True)

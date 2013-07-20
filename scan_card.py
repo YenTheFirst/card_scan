@@ -6,6 +6,7 @@ import numpy
 import cv2
 from detect_card import detect_card
 from cv_utils import float_version, show_scaled, sum_squared, ccoeff_normed
+import config
 
 def get_card(color_capture, corners):
 	target = [(0,0), (223,0), (223,310), (0,310)]
@@ -145,7 +146,7 @@ def save_captures(num, captures):
 		cv.SaveImage(path, img)
 
 def folder_to_db(num):
-	connection = sqlite3.connect("inventory.sqlite3")
+	connection = sqlite3.connect(config.db_file)
 	try:
 		cursor = connection.cursor()
 
