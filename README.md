@@ -14,9 +14,19 @@ sudo pip install -r requirements.txt
 [OpenCV](opencv.willowgarage.com) 2.3.1-7
 <pre>sudo apt-get install python-opencv</pre>
 
-* MTG Set Card Images
+* MTG Set Card Images ([GathererDownloader Instructions](https://github.com/chrismeyersfsu/card_scan/wiki/Gatherer-Downloader))
 * webcam
 * white printer paper
+
+**Configure**
+
+<a href="config.py">config.py</a>
+
+<code>db_file="inventory.sqlite3"</code>
+
+<code>cards_file="cards.xml"</code> card listing obtained from [GathererDownloader](https://github.com/chrismeyersfsu/card_scan/wiki/Gatherer-Downloader)
+
+<code>basic_magic_set_dir="cards/"</code> card images obtained from [GathererDownloader](https://github.com/chrismeyersfsu/card_scan/wiki/Gatherer-Downloader)
 
 **Running**
 
@@ -38,7 +48,7 @@ sudo pip install -r requirements.txt
 
 ***2. Match***
 
-<i>Requires an image set to match against (see wiki)</i>
+<i>Requires an image set to match against ([GathererDownloader Instructions](https://github.com/chrismeyersfsu/card_scan/wiki/Gatherer-Downloader))</i>
 <pre>python -m utils.run_match</pre>
 
 ***3. Verify***
