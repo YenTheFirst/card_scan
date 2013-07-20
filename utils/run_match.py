@@ -7,7 +7,7 @@ from sqlalchemy import distinct
 
 
 if __name__ == '__main__':
-	setup_all()
+	setup_all(True)
 
 	sets = [s[0] for s in session.query(distinct(InvCard.set_name)).filter(InvCard.set_name != 'PROMO').all()]
 	base_dir = u'/home/talin/Cockatrice/cards/downloadedPics'

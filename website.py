@@ -18,7 +18,7 @@ from elixir import session, setup_all, metadata
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import func
 
-setup_all()
+setup_all(True)
 app = Flask(__name__)
 
 BASIC_LANDS = ["Plains", "Island", "Swamp", "Mountain", "Forest"]
