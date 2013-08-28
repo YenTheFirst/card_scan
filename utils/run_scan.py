@@ -4,9 +4,10 @@ import scan_card
 from elixir import session, setup_all
 import sqlalchemy
 from sqlalchemy import func
-from models import InvCard
+from models import *
 import re
-setup_all()
+
+setup_all(True)
 
 cam = cv.CreateCameraCapture(0)
 scan_card.setup_windows()

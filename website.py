@@ -17,14 +17,15 @@ from search_card import SearchCard, Query
 from elixir import session, setup_all, metadata
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import func
+import config
 
-setup_all()
+setup_all(True)
 app = Flask(__name__)
 
 BASIC_LANDS = ["Plains", "Island", "Swamp", "Mountain", "Forest"]
 
 #on application startup, load card descriptions
-tree = ET.parse("/home/talin/Cockatrice/cards/cards.xml")
+tree = ET.parse(config.cards_file)
 root = tree.getroot()
 all_cards = filter(None,
 		(SearchCard.from_xml_node(n)
@@ -44,7 +45,7 @@ def db_image(img_id):
 
 @app.route('/known_image/<set_abbrev>/<name>')
 def known_image(set_abbrev,name):
-	base_dir = '/home/talin/Cockatrice/cards/downloadedPics' #'' #YOUR BASE_DIR HERE
+	base_dir = config.base_magic_set_dir 
 	sub_path = os.path.join(set_abbrev,name+'.full.jpg')
 	path = safe_join(base_dir, sub_path)
 	if os.path.exists(path):

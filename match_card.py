@@ -3,6 +3,7 @@ import sqlite3
 from cv_utils import ccoeff_normed, img_from_buffer, float_version
 import cv
 import math
+import config
 
 PREV, NEXT, KEY, RESULT = 0, 1, 2, 3
 MAXSIZE = 7000
@@ -85,7 +86,7 @@ def load_sets(base_dir, set_names):
 	return cards
 
 def match_db_cards(known, cache):
-	connection = sqlite3.connect("inventory.sqlite3")
+	connection = sqlite3.connect(config.db_file)
 	try:
 		cursor = connection.cursor()
 		cursor.execute("select rowid, scan_png from inv_cards where recognition_status is 'scanned'")

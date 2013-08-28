@@ -3,7 +3,8 @@ import sqlalchemy
 from sqlalchemy import func
 from models import InvCard
 import re
-setup_all()
+
+setup_all(True)
 
 def compress_smallest_box():
 	last_box = session.query(func.max(sqlalchemy.cast(InvCard.box, sqlalchemy.Integer))).first()[0]
