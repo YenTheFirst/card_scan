@@ -41,6 +41,12 @@ def capture_box(cam, boxnum):
 if __name__ == '__main__':
 	#main loop
 	while True:
-		next_box = session.query(func.max(sqlalchemy.cast(InvCard.box, sqlalchemy.Integer))).first()[0] + 1
+		#for now, name the next box as the largest integer box name, +1
+		current_max_box = session.query(func.max(sqlalchemy.cast(InvCard.box, sqlalchemy.Integer))).first()[0]
+		if current_max_box is None:
+			#if there is no current box, just start at 1
+			next_box = 1
+		else:
+			next_box = current_max_box + 1
 		print "scanning %02d" % next_box
 		capture_box(cam, next_box)
