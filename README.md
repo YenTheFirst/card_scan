@@ -48,7 +48,7 @@ sudo pip install -r requirements.txt
 
 ***2. Match***
 
-<i>Requires an image set to match against ([GathererDownloader Instructions](https://github.com/chrismeyersfsu/card_scan/wiki/Gatherer-Downloader))</i>
+Requires an image set to match against ([GathererDownloader Instructions](https://github.com/chrismeyersfsu/card_scan/wiki/Gatherer-Downloader))
 <pre>python -m utils.run_match</pre>
 
 ***3. Verify***
