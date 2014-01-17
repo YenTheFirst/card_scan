@@ -53,7 +53,7 @@ Requires an image set to match against ([GathererDownloader Instructions](https:
 
 ***3. Verify***
 
-Verification allows you to manually edit any dependencies introduced in the matching process.
+Verification allows you to manually label any cards the matching process could not recognize, or was uncertain about whether its recognition was correct.
 <pre>python website.py</pre>
 [http://localhost:5000/verify_scans](http://localhost:5000/verify_scans)
 
