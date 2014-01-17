@@ -1,4 +1,4 @@
-Card recognition and organization based on [opencv](opencv.willowgarage.com)
+Card recognition and organization based on [opencv](http://opencv.org/)
 
 [demo video](http://youtu.be/ppNy9fdw91E)
 
@@ -11,7 +11,7 @@ python 2.7, numpy, Flask, SQLAlchemy, Elixir
 sudo apt-get install python-dev
 sudo pip install -r requirements.txt
 </pre>
-[OpenCV](opencv.willowgarage.com) 2.3.1-7
+[OpenCV](http://opencv.org/) 2.3.1-7
 <pre>sudo apt-get install python-opencv</pre>
 
 * MTG Set Card Images ([GathererDownloader Instructions](https://github.com/chrismeyersfsu/card_scan/wiki/Gatherer-Downloader))
