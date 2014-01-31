@@ -151,32 +151,6 @@ def setup_windows():
 	#cv.StartWindowThread()
 
 
-#cv.EncodeImage('.PNG',img).tostring()
-def save_captures(num, captures):
-	dir = "capture_%02d" % num
-	if not os.path.exists(dir):
-		os.mkdir(dir)
-	for i, img in enumerate(captures):
-		path = os.path.join(dir, "card_%04d.png" % i)
-		if os.path.exists(path):
-			raise Exception("path %s already exists!" % path)
-		cv.SaveImage(path, img)
-
-def folder_to_db(num):
-	connection = sqlite3.connect(config.db_file)
-	try:
-		cursor = connection.cursor()
-
-		dir = "capture_%02d" % num
-		names = sorted(os.listdir(dir))
-		for i, name in enumerate(names):
-			path = os.path.join(dir, name)
-			img = open(path).read()
-
-			cursor.execute('insert into inv_cards (scan_png, box, box_index, recognition_status, inventory_status) values (?, ?, ?, ?, ?)', [sqlite3.Binary(img), num, i, "scanned", "present"])
-		connection.commit()
-	finally:
-		connection.close()
 
 '''
 import cv

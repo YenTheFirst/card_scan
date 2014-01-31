@@ -24,39 +24,57 @@ from sqlalchemy import func
 from models import *
 import re
 
-setup_all(True)
+def captures_to_db(captures, box_name):
+	#given an iterable of captures and a box name,
+	#save all the captured images to the database
+	starting_index = session.query(func.max(InvCard.box_index))\
+			.filter(InvCard.box==box_name).first()[0]
+	if starting_index is None:
+		starting_index = 0
 
-cam = cv.CreateCameraCapture(0)
-scan_card.setup_windows()
+	for i, img in enumerate(captures):
+		as_png = cv.EncodeImage(".png", img).tostring()
+
+		InvCard(
+				box = box_name,
+				box_index = starting_index + i,
+				scan_png = as_png,
+				recognition_status = "scanned",
+				inventory_status = "present")
+
+	session.commit()
 
 def capture_box(cam, boxnum):
+
+	print "scanning %s" % boxnum
 	while True: #retry loop
 		retry = False
 		captures = scan_card.watch_for_card(cam)
-		scan_card.save_captures(boxnum, captures)
 		print "captured %d cards. is this correct?" % len(captures)
 		answer = raw_input()
 		print "got answer: ", answer
 		if re.search('[yc]',answer):
 			break #finish the function
 		else:
-			print "try editing captures_%02d to match" % boxnum
-			answer = ""
-			while not re.match('[cra]', answer):
-				print "when done - (c)orrected? (r)etry scan? or (a)bort?"
+			while not re.match('[ra]', answer):
+				print "(r)etry scan? or (a)bort?"
 				answer = raw_input()
-			if re.search('c',answer):
-				break
-			elif re.search('r',answer):
+			if re.search('r',answer):
 				continue
 			elif re.search('a',answer):
 				return #abort the scan
 			#default will retry
 
-	scan_card.folder_to_db(boxnum)
+	captures_to_db(captures, boxnum)
+
 
 
 if __name__ == '__main__':
+	setup_all(True)
+
+	cam = cv.CreateCameraCapture(0)
+	scan_card.setup_windows()
+
 	#main loop
 	while True:
 		#for now, name the next box as the largest integer box name, +1
@@ -66,5 +84,9 @@ if __name__ == '__main__':
 			next_box = 1
 		else:
 			next_box = current_max_box + 1
-		print "scanning %02d" % next_box
+
+		print "box to scan[%02d]: " % next_box,
+		answer = raw_input().rstrip()
+		if answer != "":
+			next_box = answer
 		capture_box(cam, next_box)
