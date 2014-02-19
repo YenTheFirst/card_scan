@@ -282,8 +282,12 @@ class SearchCard:
 		if "Creature" in new_card.types:
 			#power or toughness can be an integer, '*', or {fraction}
 			#well, the last one's only for Little Girl ;)
-			p_t = node.find('pt').text.split('/')
-			new_card.power, new_card.toughness = map(maybe_to_int, p_t)
+			n = node.find('pt')
+			if n:
+				p_t = n.text.split('/')
+				new_card.power, new_card.toughness = map(maybe_to_int, p_t)
+			else:
+				new_card.power, new_card.toughness = (0,0)
 
 		if "Planeswalker" in new_card.types:
 			set_attribute("loyalty")
