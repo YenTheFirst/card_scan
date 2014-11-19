@@ -25,7 +25,7 @@ setup_all(True)
 
 def compress_smallest_box():
 	last_box = session.query(func.max(sqlalchemy.cast(InvCard.box, sqlalchemy.Integer))).first()[0]
-	box_capacity = list(metadata.bind.execute("select box,60 - count(*) as c from inv_cards where box not null group by box having c>0 order by c desc;"))
+	box_capacity = list(metadata.bind.execute("select box,60 - count(*) as c from inv_cards where box not null and cast (box as int) > 0 group by box having c>0 order by c desc;"))
 	if len(box_capacity) <= 0:
 		raise Exception("there are no boxes in inventory to compress")
 	remove_box = box_capacity[0][0]
