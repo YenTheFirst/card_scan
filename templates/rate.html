@@ -1,6 +1,25 @@
 <!doctype html>
 <html>
+	<head>
+	<script type='text/javascript'>
+		function set_defaults() {
+			rows = document.getElementsByTagName("tr");
+			for (var i=1; i<rows.length; i++) {
+				radio = rows[i].children[2];
+				any_checked = false;
+				for (var j = 0; j<4; j++) {
+					if (radio.children[j].checked) {
+						any_checked = true
+					}
+				}
+				if (!any_checked) {
+					radio.children[1].checked = true;
+				}
+			}
+		};
+	</script>
 	<body>
+		<input type='button' value='set defaults' onclick='set_defaults()'/>
 		<form action='rate?box={{box}}' method='post' name='cards'>
 			<table>
 				<tr>
