@@ -22,11 +22,12 @@ from elixir import setup_all, session
 from sqlalchemy import distinct
 import config
 
+import os
 
 if __name__ == '__main__':
 	setup_all(True)
 
-	sets = [s[0] for s in session.query(distinct(InvCard.set_name)).filter(InvCard.set_name != 'PROMO').all()]
+	sets = os.listdir(config.base_magic_set_dir)
 	base_dir = config.base_magic_set_dir
 	known = match_card.load_sets(base_dir, sets)
 	cache = match_card.GradientCache(base_dir)
