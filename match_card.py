@@ -263,13 +263,3 @@ def dct_hash(img):
 def hamming_dist(h1,h2):
 	return sum(b1 != b2 for (b1,b2) in zip(h1,h2))
 
-LIKELY_SETS = [
-	'DKA', 'ISD',
-	'NPH', 'MBS', 'SOM',
-	'ROE', 'WWK', 'ZEN',
-	'ARB', 'CON', 'ALA',
-	'EVE', 'SHM', 'MOR', 'LRW',
-	'M12', 'M11', 'M10', '10E',
-	'HOP',
-]
-
