@@ -263,7 +263,7 @@ class SearchCard:
 		set_attribute("name")
 		print "looking at ", new_card.name
 		set_attribute("sets", "set", multiple = True)
-		if set(new_card.sets).intersection(set(["UNH","UG"])): #don't even try for these
+		if set(new_card.sets).intersection(set(["Unhinged", "Unglued", "UNH","UH","UG", "UGL"])): #don't even try for these
 			del new_card
 			return None
 
