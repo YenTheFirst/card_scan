@@ -1,3 +1,6 @@
+** Project Status **
+This project is not under active development or maintenance. There's almost certainly better architectural approaches that have been developed in the intervening years since initial creation. This project is left online for educational purposes only.
+
 Card recognition and organization based on [opencv](http://opencv.org/)
 
 [demo video](http://youtu.be/ppNy9fdw91E)
